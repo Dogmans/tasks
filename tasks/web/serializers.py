@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from web.models import TaskQueue
+from web.models import Queue
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 		fields = ['id', 'username', 'snippets']
 
 
-class TaskQueueSerializer(serializers.ModelSerializer):
+class QueueSerializer(serializers.ModelSerializer):
 	class Meta:
-		model = TaskQueue
+		model = Queue
 		fields = "__all__"

@@ -1,10 +1,13 @@
+from django.contrib.auth.models import User
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework import viewsets
 
 from web.models import Queue
-from web.serializers import QueueSerializer
+from web.permissions import IsOwnerOrReadOnly
+from web.serializers import QueueSerializer, UserSerializer
+
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -22,8 +25,10 @@ class QueueViewSet(viewsets.ModelViewSet):
 	"""
 	queryset = Queue.objects.all()
 	serializer_class = QueueSerializer
-	permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-						  IsOwnerOrReadOnly]
+	permission_classes = [
+		permissions.IsAuthenticatedOrReadOnly,
+		IsOwnerOrReadOnly
+	]
 
 	def perform_create(self, serializer):
 		serializer.save(owner=self.request.user)
