@@ -49,6 +49,9 @@ class TestModels(TestBase):
 
 		tasks = queue.tasks()
 		self.assertEqual(tasks[-1].title, "TestTask2")
+	
+	# TODO - test deletion of a task in a queue and then query again
+	# TODO - test_insert_task between two other task_ids
 
 
 class TestApi(TestBase):
