@@ -10,12 +10,13 @@ ord_max = ord('Z')
 ord_min = ord('A')
 
 
-def key_next(last_key="A"):
+def key_next(last_key=None):
 	'''
 	Given a key get the next key along at the given significance level
 	I.e. increment the Nth character by one
 	:param last_key: the previous key that we need to increment from
 	'''
+	last_key = last_key or "A"
 
 	last_ord = ord(last_key[-1])
 	if last_ord >= ord_max:

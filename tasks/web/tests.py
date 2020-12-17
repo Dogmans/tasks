@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
-from web.models import Queue
+from web.models import Queue, Task
 
 
-def TestBase(TestCase):
+class TestBase(TestCase):
 
 	def setUp(self):
 		super().setUp()
@@ -25,11 +25,30 @@ class TestModels(TestBase):
 	'''
 
 	def test_create_queue(self):
-		test_queue = Queue(
+		queue = Queue(
 			owner = self._user,
 			title = "TestQueue"
 		)
+		queue.save()
 		self.assertTrue(Queue.objects.all().count())
+
+	def test_push_tasks(self):
+		queue = Queue(
+			owner = self._user,
+			title = "TestQueue"
+		)
+		queue.save()
+
+		for title in ["TestTask1", "TestTask2"]:
+			task = Task(
+				title=title,
+				details="Something"
+			)
+			task.save()
+			queue.append_task(task)
+
+		tasks = queue.tasks()
+		self.assertEqual(tasks[-1].title, "TestTask2")
 
 
 class TestApi(TestBase):
