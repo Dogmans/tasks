@@ -32,14 +32,14 @@ class TestModels(TestBase):
 		queue.save()
 		self.assertTrue(Queue.objects.all().count())
 
-	def test_push_tasks(self):
+	def test_push_delete_tasks(self):
 		queue = Queue(
 			owner = self._user,
 			title = "TestQueue"
 		)
 		queue.save()
 
-		for title in ["TestTask1", "TestTask2"]:
+		for title in ["TestTask1", "TestTask2", "TestTask3"]:
 			task = Task(
 				title=title,
 				details="Something"
@@ -47,11 +47,46 @@ class TestModels(TestBase):
 			task.save()
 			queue.append_task(task)
 
+		# Check end of queue
 		tasks = queue.tasks()
-		self.assertEqual(tasks[-1].title, "TestTask2")
-	
-	# TODO - test deletion of a task in a queue and then query again
-	# TODO - test_insert_task between two other task_ids
+		self.assertEqual(tasks[-1].title, "TestTask3")
+
+		# Check beginning of queue after removal of first item
+		tasks[0].delete()
+		tasks = queue.tasks()
+		self.assertEqual(tasks[0].title, "TestTask2")
+
+	def test_push_insert_task(self):
+		queue = Queue(
+			owner = self._user,
+			title = "TestQueue"
+		)
+		queue.save()
+
+		for title in ["TestTask1", "TestTask2", "TestTask3"]:
+			task = Task(
+				title=title,
+				details="Something"
+			)
+			task.save()
+			queue.append_task(task)
+
+		# Insert a task between 1 and 2
+		tasks = queue.tasks()
+		task = Task(
+			title="Inserted between",
+			details="Something in the middle"
+		)
+		task.save()
+		queue.insert_task(task, tasks[1].id, tasks[2].id)
+
+		tasks = queue.tasks()
+		self.assertEqual(tasks[2].title, "Inserted between")
+
+
+	# TODO - add test to make sure that slots etc. are cleared up on task deletion
+	# Just do a count before and after
+	# TODO - test error handling where IDs don't exist
 
 
 class TestApi(TestBase):

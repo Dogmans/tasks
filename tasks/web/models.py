@@ -28,20 +28,20 @@ class Queue(models.Model):
 		sort_key = key_next(slot_last and slot_last.sort_key)
 		return self._add_task(task, sort_key)
 
-	def insert_task(self, task, sort_key_before, sort_key_after):
+	def insert_task(self, task, id_before, id_after):
 		'''
 		Insert a task between two existing slots / tasks in the queue
-		TODO - switch to task_id_before and task_id_after since UI won't know
-		about slots
 		:param task: Task
-		:param sort_key_before: str
-		:param sort_key_after: str
+		:param id_before: int
+		:param id_after: int
 		'''
+		sort_key_before = Slot.objects.get(task_id=id_before).sort_key
+		sort_key_after = Slot.objects.get(task_id=id_after).sort_key
 		sort_key = key_between(sort_key_before, sort_key_after)
 		return self._add_task(task, sort_key)
 
 	def tasks(self):
-		return [slot.task for slot in self.slot_set.select_related("task").all()]
+		return [slot.task for slot in self.slot_set.order_by("sort_key").select_related("task").all()]
 
 
 class Task(models.Model):
