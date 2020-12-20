@@ -16,12 +16,9 @@ class TestBase(TestCase):
 		)
 
 		self._client = Client()
-		response = self._client.post(
-			"/login/",
-			{
-				"username": "TestUser",
-				"password": "12345"
-			}
+		self._client.login(
+			username="TestUser",
+			password="12345"
 		)
 
 		self._queue = Queue(
@@ -134,4 +131,7 @@ class TestApi(TestBase):
 		'''
 		Create a queue then insert some task in the middle of it and retrieve
 		'''
+		pass
+
+	def test_user_permissions(self):
 		pass
