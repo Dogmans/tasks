@@ -40,6 +40,14 @@ class Queue(models.Model):
 		sort_key = key_between(sort_key_before, sort_key_after)
 		return self._add_task(task, sort_key)
 
+	def remove_task(self, task):
+		'''
+		Remove a task from the list, note that this does not delete the task
+		:param task:
+		'''
+		slot = task.slot_set.filter(queue=self).first()
+		slot.delete()
+
 	def tasks(self):
 		return [slot.task for slot in self.slot_set.order_by("sort_key").select_related("task").all()]
 

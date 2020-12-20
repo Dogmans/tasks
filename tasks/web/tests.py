@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
-from web.models import Queue, Task
+from web.models import Queue, Slot, Task
 
 
 class TestBase(TestCase):
@@ -16,6 +16,20 @@ class TestBase(TestCase):
 		)
 		self._client = Client()
 
+		self._queue = Queue(
+			owner = self._user,
+			title = "TestQueue"
+		)
+		self._queue.save()
+
+		for title in ["TestTask1", "TestTask2", "TestTask3"]:
+			task = Task(
+				title=title,
+				details="Something"
+			)
+			task.save()
+			self._queue.append_task(task)
+
 
 class TestModels(TestBase):
 	'''
@@ -25,66 +39,68 @@ class TestModels(TestBase):
 	'''
 
 	def test_create_queue(self):
-		queue = Queue(
-			owner = self._user,
-			title = "TestQueue"
-		)
-		queue.save()
 		self.assertTrue(Queue.objects.all().count())
 
 	def test_push_delete_tasks(self):
-		queue = Queue(
-			owner = self._user,
-			title = "TestQueue"
-		)
-		queue.save()
-
-		for title in ["TestTask1", "TestTask2", "TestTask3"]:
-			task = Task(
-				title=title,
-				details="Something"
-			)
-			task.save()
-			queue.append_task(task)
-
 		# Check end of queue
-		tasks = queue.tasks()
+		tasks = self._queue.tasks()
 		self.assertEqual(tasks[-1].title, "TestTask3")
 
 		# Check beginning of queue after removal of first item
 		tasks[0].delete()
-		tasks = queue.tasks()
+		tasks = self._queue.tasks()
 		self.assertEqual(tasks[0].title, "TestTask2")
 
 	def test_push_insert_task(self):
-		queue = Queue(
-			owner = self._user,
-			title = "TestQueue"
-		)
-		queue.save()
-
-		for title in ["TestTask1", "TestTask2", "TestTask3"]:
-			task = Task(
-				title=title,
-				details="Something"
-			)
-			task.save()
-			queue.append_task(task)
-
 		# Insert a task between 1 and 2
-		tasks = queue.tasks()
+		tasks = self._queue.tasks()
 		task = Task(
 			title="Inserted between",
 			details="Something in the middle"
 		)
 		task.save()
-		queue.insert_task(task, tasks[1].id, tasks[2].id)
+		self._queue.insert_task(task, tasks[1].id, tasks[2].id)
 
-		tasks = queue.tasks()
+		tasks = self._queue.tasks()
 		self.assertEqual(tasks[2].title, "Inserted between")
 
+	def test_copy_move_task(self):
+		target_queue = Queue(
+			owner = self._user,
+			title = "TargetQueue"
+		)
+		target_queue.save()
 
-	# TODO - add test to make sure that slots etc. are cleared up on task deletion
+		tasks = self._queue.tasks()
+		task = tasks[1]
+		target_queue.append_task(task)
+
+		# Check the source queue still contains the task
+		tasks = self._queue.tasks()
+		self.assertEqual(len(tasks), 3, len(tasks))
+
+		# Check the target queue contains the task
+		tasks = target_queue.tasks()
+		self.assertEqual(len(tasks), 1, len(tasks))
+
+		# Check the source queue only has 2 tasks
+		self._queue.remove_task(task)
+		tasks = self._queue.tasks()
+		self.assertEqual(len(tasks), 2, len(tasks))
+
+	def test_cleanup(self):
+		tasks = self._queue.tasks()
+
+		while (len(tasks)):
+			tasks[0].delete()
+			tasks = self._queue.tasks()
+
+		slot_count = Slot.objects.all().count()
+		self.assertEqual(slot_count, 0, slot_count)
+
+
+
+	# TODO - test moving one to another and copying one to another list
 	# Just do a count before and after
 	# TODO - test error handling where IDs don't exist
 
@@ -95,9 +111,8 @@ class TestApi(TestBase):
 	'''
 
 	def test_create_queue(self):
-		# TODO - actually make a Queue via a request
 		result = self._client.get("/api/queues/")
-		self.assertTrue(result.data)
+		self.assertEqual(len(result.data), 1)
 
 	def test_create_populate_queue(self):
 		'''
