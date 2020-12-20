@@ -14,7 +14,15 @@ class TestBase(TestCase):
 			first_name="Test",
 			last_name="User",
 		)
+
 		self._client = Client()
+		response = self._client.post(
+			"/login/",
+			{
+				"username": "TestUser",
+				"password": "12345"
+			}
+		)
 
 		self._queue = Queue(
 			owner = self._user,
@@ -98,10 +106,6 @@ class TestModels(TestBase):
 		slot_count = Slot.objects.all().count()
 		self.assertEqual(slot_count, 0, slot_count)
 
-
-
-	# TODO - test moving one to another and copying one to another list
-	# Just do a count before and after
 	# TODO - test error handling where IDs don't exist
 
 
@@ -110,15 +114,21 @@ class TestApi(TestBase):
 	Holds tests that call the REST API to perform functions 
 	'''
 
-	def test_create_queue(self):
-		result = self._client.get("/api/queues/")
-		self.assertEqual(len(result.data), 1)
+	def test_get_queue(self):
+		response = self._client.get("/api/queues/")
+		self.assertEqual(len(response.data), 1)
 
-	def test_create_populate_queue(self):
+	def test_create_queue(self):
 		'''
-		Create a queue with slots and tasks and retrieve via REST
+		Create a queue with and retrieve via REST
 		'''
-		pass
+		response = self._client.post(
+			"/api/queues/",
+			{"title": "Testing 123"}
+		)
+		self.assertEqual(response.status_code, 200)
+		response = self._client.get("/api/queues/")
+		self.assertEqual(len(response.data), 2)
 
 	def test_create_insert_queue(self):
 		'''
