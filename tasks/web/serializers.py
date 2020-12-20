@@ -15,4 +15,4 @@ class UserSerializer(serializers.ModelSerializer):
 class QueueSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Queue
-		fields = "__all__"
+		fields = ["title"]

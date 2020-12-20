@@ -23,6 +23,8 @@ class QueueViewSet(viewsets.ModelViewSet):
 	This viewset automatically provides `list`, `create`, `retrieve`,
 	`update` and `destroy` actions.
 	"""
+	# https://stackoverflow.com/questions/22760191/django-rest-framework-permissions-for-create-in-viewset
+	# TODO - don't list stuff that people don't have permission for
 	queryset = Queue.objects.all()
 	serializer_class = QueueSerializer
 	permission_classes = [

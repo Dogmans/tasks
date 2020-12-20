@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
+from rest_framework.test import APIClient
 from web.models import Queue, Slot, Task
 
 
@@ -16,7 +17,7 @@ class TestBase(TestCase):
 		)
 		self._user.save()
 
-		self._client = Client()
+		self._client = APIClient()
 		self._client.login(
 			username="TestUser",
 			password="12345"
@@ -122,9 +123,13 @@ class TestApi(TestBase):
 		'''
 		response = self._client.post(
 			"/api/queues/",
-			{"title": "Testing 123"}
+			{"title": "Testing 123"},
+			format="json"
 		)
-		self.assertEqual(response.status_code, 200)
+		# Created successfully
+		self.assertEqual(response.status_code, 201, response.data)
+
+		# Check we now have 2 queues
 		response = self._client.get("/api/queues/")
 		self.assertEqual(len(response.data), 2)
 
