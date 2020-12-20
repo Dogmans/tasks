@@ -7,13 +7,14 @@ class TestBase(TestCase):
 
 	def setUp(self):
 		super().setUp()
-		self._user = User.objects.create(
+		self._user = User.objects.create_user(
 			username="TestUser",
 			email="willfg@gmail.com",
 			password="12345",
 			first_name="Test",
 			last_name="User",
 		)
+		self._user.save()
 
 		self._client = Client()
 		self._client.login(
