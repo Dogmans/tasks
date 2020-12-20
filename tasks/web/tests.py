@@ -140,4 +140,6 @@ class TestApi(TestBase):
 		pass
 
 	def test_user_permissions(self):
+		# TODO - test cannot see things without correct permission for listing
+		# TODO - test cannot create items / delete etc. without perms
 		pass
