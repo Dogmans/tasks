@@ -23,6 +23,21 @@ class TestBase(TestCase):
 			password="12345"
 		)
 
+		self._user_two = User.objects.create_user(
+			username="TestUser2",
+			email="willfg@gmail.com",
+			password="12345",
+			first_name="Test2",
+			last_name="User2",
+		)
+		self._user_two.save()
+
+		self._client_two = APIClient()
+		self._client_two.login(
+			username="TestUser2",
+			password="12345"
+		)
+
 		self._queue = Queue(
 			owner = self._user,
 			title = "TestQueue"
@@ -115,11 +130,27 @@ class TestApi(TestBase):
 	Holds tests that call the REST API to perform functions 
 	'''
 
-	def test_get_queue(self):
+	def test_create_retrieve_task(self):
+		'''
+		Create and retrieve task
+		'''
+		response = self._client.post(
+			"/api/tasks/",
+			{
+				"title": "Testing 123",
+				"details": "Test details"
+			},
+			format="json"
+		)
+		task_id = response.data["id"]
+		response = self._client.get("/api/tasks/%s/" % task_id)
+		self.assertEqual(response.data["id"], task_id)
+
+	def test_get_queues(self):
 		response = self._client.get("/api/queues/")
 		self.assertEqual(len(response.data), 1)
 
-	def test_create_queue(self):
+	def test_create_retrieve_queues(self):
 		'''
 		Create a queue with and retrieve via REST
 		'''
@@ -189,6 +220,40 @@ class TestApi(TestBase):
 
 
 	def test_user_permissions(self):
-		# TODO - test cannot see things without correct permission for listing
-		# TODO - test cannot create items / delete etc. without perms
-		pass
+		'''
+		Make sure user 2 does not have access to user 1 objects
+		'''
+		response = self._client.get("/api/queues/")
+		self.assertEqual(len(response.data), 1)
+
+		# Check queues not visible to second user
+		response = self._client_two.get("/api/queues/")
+		self.assertEqual(len(response.data), 0)
+
+		# Check 2nd user can't get 1st user's task
+		response = self._client.post(
+			"/api/tasks/",
+			{
+				"title": "Task 123",
+				"details": "Task 123 details"
+			},
+			format="json"
+		)
+		task_id = response.data["id"]
+
+		response = self._client.get(
+			"/api/tasks/%s/" % task_id,
+			format="json"
+		)
+		self.assertEqual(response.status_code, 200, response)
+
+		response = self._client_two.get(
+			"/api/tasks/%s/" % task_id,
+			format="json"
+		)
+		self.assertEqual(response.status_code, 404, response)
+
+		# Check 2nd user can't do anything to the wrong queue
+		# TODO - GET / POST / DELETE etc.
+
+
