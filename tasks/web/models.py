@@ -54,6 +54,11 @@ class Queue(models.Model):
 
 
 class Task(models.Model):
+	owner = models.ForeignKey(
+		"auth.User",
+		related_name="tasks",
+		on_delete=models.CASCADE
+	)
 	title = models.CharField(max_length=32)
 	details = models.TextField()
 	created_on = models.DateTimeField(auto_now_add=True)
