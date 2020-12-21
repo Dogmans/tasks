@@ -35,8 +35,9 @@ class Queue(models.Model):
 		:param id_before: int
 		:param id_after: int
 		'''
-		sort_key_before = Slot.objects.get(task_id=id_before).sort_key
-		sort_key_after = Slot.objects.get(task_id=id_after).sort_key
+		query_root = Slot.objects.values_list("sort_key", flat=True)
+		sort_key_before = query_root.get(task_id=id_before)
+		sort_key_after = query_root.get(task_id=id_after)
 		sort_key = key_between(sort_key_before, sort_key_after)
 		return self._add_task(task, sort_key)
 
