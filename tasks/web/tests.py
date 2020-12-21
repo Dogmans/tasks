@@ -133,11 +133,58 @@ class TestApi(TestBase):
 		response = self._client.get("/api/queues/")
 		self.assertEqual(len(response.data), 2)
 
-	def test_create_insert_queue(self):
+	def test_queue_append_task(self):
 		'''
-		Create a queue then insert some task in the middle of it and retrieve
+		Create a task then append to a queue
 		'''
-		pass
+		response = self._client.post(
+			"/api/tasks/",
+			{
+				"title": "Task 123",
+				"details": "Task 123 details"
+			},
+			format="json"
+		)
+		# Created successfully
+		self.assertTrue(response.data, response)
+		self.assertEqual(response.status_code, 201, response.data)
+		task_id = response.data["id"]
+
+		# Now append to the queue
+		queue_id = self._queue.id
+		response = self._client.post(
+			"/api/queues/%s/tasks/" % queue_id,
+			{
+				"task_id": task_id
+			},
+			format="json"
+		)
+		# Inserted successfully
+		self.assertEqual(response.status_code, 201, response.data)
+
+		# Now query for all tasks under this queue (it's returned above too)
+		response = self._client.get(
+			"/api/queues/%s/tasks/" % queue_id,
+			format="json"
+		)
+		# Check that our task is in there
+		self.assertEqual(response.status_code, 200, response.data)
+
+	def test_queue_remove_task(self):
+		'''
+		Remove an existing task from the queue
+		'''
+		task_to_remove = self._queue.tasks()[1]
+		response = self._client.delete(
+			"/api/queues/%s/tasks/" % self._queue.id,
+			{
+				"task_id": task_to_remove.id
+			},
+			format="json"
+		)
+		self.assertEqual(response.status_code, 202, response)
+		self.assertEqual(len(response.data), 2, response)
+
 
 	def test_user_permissions(self):
 		# TODO - test cannot see things without correct permission for listing
