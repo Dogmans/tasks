@@ -25,13 +25,15 @@ class QueueViewSet(viewsets.ModelViewSet):
 	`update` and `destroy` actions.
 	"""
 	# https://stackoverflow.com/questions/22760191/django-rest-framework-permissions-for-create-in-viewset
-	# TODO - don't list stuff that people don't have permission for
-	queryset = Queue.objects.all()
 	serializer_class = QueueSerializer
+	# TODO - this is too lax, change this for updating etc.
 	permission_classes = [
 		permissions.IsAuthenticatedOrReadOnly,
 		IsOwnerOrReadOnly
 	]
+
+	def get_queryset(self):
+		return Queue.objects.filter(owner=self.request.user)
 
 	@action(methods=["POST", "GET", "DELETE"], detail=True)
 	def tasks(self, request, *args, **kwargs):
@@ -64,10 +66,11 @@ class TaskViewSet(viewsets.ModelViewSet):
 	`update` and `destroy` actions.
 	"""
 	# https://stackoverflow.com/questions/22760191/django-rest-framework-permissions-for-create-in-viewset
-	# TODO - don't list stuff that people don't have permission for
-	queryset = Task.objects.all()
 	serializer_class = TaskSerializer
 	permission_classes = [
 		permissions.IsAuthenticatedOrReadOnly,
 		IsOwnerOrReadOnly
 	]
+
+	def get_queryset(self):
+		return Task.objects.filter(owner=self.request.user)
