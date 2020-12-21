@@ -10,7 +10,6 @@ from web.permissions import IsOwnerOrReadOnly
 from web.serializers import QueueSerializer, TaskSerializer, UserSerializer
 
 
-
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	"""
 	This viewset automatically provides `list` and `retrieve` actions.
