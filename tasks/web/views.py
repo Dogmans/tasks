@@ -37,19 +37,19 @@ class QueueViewSet(viewsets.ModelViewSet):
 
 	@action(methods=["POST", "GET", "DELETE"], detail=True)
 	def tasks(self, request, *args, **kwargs):
-		# TODO - check we have task ownership as well
-		# https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
-		# Handle errors too
 		response_status = status.HTTP_200_OK
 		queue = self.get_object()
+		task_id = request.data.get("task_id")
+		if task_id:
+			try:
+				task = Task.objects.get(owner=request.user, pk=task_id)
+			except Task.DoesNotExist:
+				return Response(status=status.HTTP_404_NOT_FOUND)
+
 		if request.method == "POST":
-			task_id = int(request.data["task_id"])
-			task = Task.objects.get(pk=task_id)
 			queue.append_task(task)
 			response_status = status.HTTP_201_CREATED
 		elif request.method == "DELETE":
-			task_id = int(request.data["task_id"])
-			task = Task.objects.get(pk=task_id)
 			queue.remove_task(task)
 			response_status = status.HTTP_202_ACCEPTED
 
@@ -74,3 +74,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 	def get_queryset(self):
 		return Task.objects.filter(owner=self.request.user)
+
+	def perform_create(self, serializer):
+		serializer.save(owner=self.request.user)
+

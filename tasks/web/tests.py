@@ -32,7 +32,8 @@ class TestBase(TestCase):
 		for title in ["TestTask1", "TestTask2", "TestTask3"]:
 			task = Task(
 				title=title,
-				details="Something"
+				details="Something",
+				owner=self._user
 			)
 			task.save()
 			self._queue.append_task(task)
@@ -63,7 +64,8 @@ class TestModels(TestBase):
 		tasks = self._queue.tasks()
 		task = Task(
 			title="Inserted between",
-			details="Something in the middle"
+			details="Something in the middle",
+			owner=self._user
 		)
 		task.save()
 		self._queue.insert_task(task, tasks[1].id, tasks[2].id)
