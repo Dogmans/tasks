@@ -12,81 +12,67 @@
 	{% block head %}{% endblock %}
 </head>
 <body>
-	<div id="fill-height" class="d-flex flex-column">
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-		<a href="/" class="navbar-brand">Tasks</a>
-		<button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#collapsible-target"
-			aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-		<div class="collapse navbar-collapse justify-content-end" id="collapsible-target">
-			<ul class="navbar-nav mr-auto">
-				{% if navItems %}
-					{% for navItem in navItems %}
-					<li class="nav-item">
-						<a class="nav-link {{ navItem.cssClass }}" href="{{ navItem.href }}">{{ navItem.title }}</a>
-					</li>
-					{% endfor %}
-				{% endif %}
-			</ul>
-			<span class="navbar-nav">
-				{% if user.is_authenticated %}
-					{% block nav %}
-					{% endblock %}
-					<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							{{ user.username }}
-						</a>
-						<div class="dropdown-menu dropdown-menu-right bg-dark text-white" aria-labelledby="authDropdown">
-							{% if user.is_staff %}
-							<a class="dropdown-item text-white" href="/admin">Admin</a>
-							{% endif %}
-							<a class="dropdown-item text-white" href="/accounts/settings">Preferences</a>
-							<a class="dropdown-item text-white" href="{% url 'logout'%}">Logout</a>
-						</div>
-					</li>
-				{% else %}
-					<a class="nav-link" href="{% url 'login'%}?next={{request.path}}">Login</a>
-				{% endif %}
-			</span>
+	<div class="container fluid">
+		<div id="app" class="row fullheight">
+			<div class="col-sm-2 bg-primary">
+				a
+			</div>
+			<div class="col-sm-2 bg-secondary">
+				b
+			</div>
+			<div class="col-sm-8 bg-info">
+				c
+			</div>
 		</div>
-	</nav>
-	<div id="content">
-	{% if messages %}
-		{% for message in messages %}
-			{% if message.tags == "error" %}
-				<div class="alert alert-danger">
-			{% elif message.tags == "warning" %}
-				<div class="alert alert-warning">
-			{% else %}
-				<div class="alert alert-success">
-			{% endif %}
-			{{ message }}</div>
-		{% endfor %}
-	{% endif %}
-	{% block content %}{% endblock %}
 	</div>
 	<script src="{% static "/js/jquery-3.2.1.min.js" %}"></script>
 	<script src="{% static "/js/bootstrap.min.js" %}"></script>
 	<script src="{% static "/js/moment-with-locales.min.js" %}"></script>
 	<script src="{% static "/js/vue.min.js" %}"></script>
-	<script type="text/javascript">
-	$("#navDropdown").html($("#navDropdown li").sort(function (a, b) {
-		left = String(a.value).padStart(4, '0');
-		right = String(b.value).padStart(4, '0');
-		return left == right ? 0 : left < right ? -1 : 1
-	}));
+	<script>
+		document.addEventListener("DOMContentLoaded", function(event) {
+			app = new Vue({
+				el: "#app",
+				data: {
+					queues: queues,
+					tasks: tasks,
+					details: details
+				},
+				methods: {
+					loadDetails: function(hub) {
+						document.location.href = "/hub/" + hub.identifier;
+					},
+					highlight: function(hub) {
+						markersById[hub.identifier].setStyle({radius: 15});
+					},
+					highlightReset: function(hub) {
+						markersById[hub.identifier].setStyle({radius: 10});
+					},
+					badgeClassByStatus: function(entity) {
+						switch(entity.status) {
+							case "ERROR":
+								return "badge-danger";
+							case "WARNING":
+								return "badge-warning";
+							case "OK":
+								return "badge-success";
+							default:
+								return "badge-secondary";
+						}
+					},
+				},
+				filters: {
+					truncate: function (text, length, suffix) {
+						if (text.length > length) {
+							return text.substring(0, length - suffix.length) + suffix;
+						} else {
+							return text;
+						}
+					}
+				}
+			});
+		});
 	</script>
-	<div class="flex-grow-1"></div>
-	<footer class="bg-dark text-light">
-		<div class="p-3 bg-dark float-left" id="statusBar">
-			{{ statusBar }}
-		</div>
-		<div class="p-3 bg-dark float-right">
-			Copyright WFG {% year %}
-		</div>
-	</footer>
-	</div> <!-- End of flex -->
 	{% block bottom %}{% endblock %}
 </body>
 </html>
