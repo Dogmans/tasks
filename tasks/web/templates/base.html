@@ -44,6 +44,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<script>
 		document.addEventListener("DOMContentLoaded", function(event) {
+			axios.defaults.headers.common['X-CSRFTOKEN'] =
+				document.querySelector("[name=csrfmiddlewaretoken]").value;
 			app = new Vue({
 				el: "#app",
 				data: {
@@ -73,7 +75,7 @@
 							title: "Test"
 						})
 						.then(function (response) {
-							self.queues = response.data;
+							self.queues.push(response.data);
 						})
 						.catch(function (error) {
 							console.log(error);
@@ -92,6 +94,8 @@
 			});
 		});
 	</script>
-	{% block bottom %}{% endblock %}
+	{% block bottom %}
+		{% csrf_token %}
+	{% endblock %}
 </body>
 </html>
