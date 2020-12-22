@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.views.generic import TemplateView
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -76,4 +78,3 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 	def perform_create(self, serializer):
 		serializer.save(owner=self.request.user)
-
