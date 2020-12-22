@@ -29,7 +29,7 @@ class QueueViewSet(viewsets.ModelViewSet):
 	serializer_class = QueueSerializer
 	# TODO - this is too lax, change this for updating etc.
 	permission_classes = [
-		permissions.IsAuthenticatedOrReadOnly,
+		permissions.IsAuthenticated,
 		IsOwnerOrReadOnly
 	]
 
@@ -69,7 +69,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 	# https://stackoverflow.com/questions/22760191/django-rest-framework-permissions-for-create-in-viewset
 	serializer_class = TaskSerializer
 	permission_classes = [
-		permissions.IsAuthenticatedOrReadOnly,
+		permissions.IsAuthenticated,
 		IsOwnerOrReadOnly
 	]
 
