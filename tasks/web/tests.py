@@ -222,6 +222,15 @@ class TestApi(TestBase):
 		self.assertEqual(response.status_code, 202, response)
 		self.assertEqual(len(response.data), 2, response)
 
+	def test_queue_anonymous_user(self):
+		'''
+		Test that anonymous users are handled correctly
+		'''
+		response = self._client.get("/api/queues/")
+		self.assertEqual(len(response.data), 1)
+		self._client.logout()
+		response = self._client.get("/api/queues/")
+		self.assertEqual(response.status_code, 403, response)
 
 	def test_user_permissions(self):
 		'''
