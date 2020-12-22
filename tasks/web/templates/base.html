@@ -21,8 +21,11 @@
 	</div>
 	<div class="container fluid">
 		<div id="app" class="row fullheight">
-			<div class="col-sm-2 bg-primary">
-				a
+			{% verbatim %}
+			<div class="col-sm-2 bg-primary fullheight">
+				<div v-for="queue in queues">
+				{{ queue.title }}
+				</div>
 			</div>
 			<div class="col-sm-2 bg-secondary">
 				b
@@ -30,6 +33,7 @@
 			<div class="col-sm-8 bg-info">
 				c
 			</div>
+			{% endverbatim %}
 		</div>
 	</div>
 	<script src="{% static "/js/jquery-3.2.1.min.js" %}"></script>
@@ -46,10 +50,11 @@
 					tasks: [],
 					details: ""
 				},
-				created: function() {
+				mounted () {
+					var self = this;
 					axios.get("/api/queues/")
 					.then(function (response) {
-						queues = response.data;
+						self.queues = response.data;
 					})
 					.catch(function (error) {
 						console.log(error);
