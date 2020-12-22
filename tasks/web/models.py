@@ -10,6 +10,9 @@ class Queue(models.Model):
 	)
 	title = models.CharField(max_length=20)
 
+	def __str__(self):
+		return self.title
+
 	def _add_task(self, task, sort_key):
 		slot = Slot(
 			queue=self,
@@ -67,9 +70,15 @@ class Task(models.Model):
 		blank=True
 	)
 
+	def __str__(self):
+		return self.title
+
 
 class Slot(models.Model):
 	queue = models.ForeignKey(Queue, on_delete=models.CASCADE)
 	task = models.ForeignKey(Task, on_delete=models.CASCADE)
 	sort_key = models.CharField(max_length=32)
+
+	def __str__(self):
+		return "{}-{}".format(self.queue.title, self.task.title)
 

@@ -12,6 +12,13 @@
 	{% block head %}{% endblock %}
 </head>
 <body>
+	<div class="nav>
+		{% if user.is_authenticated %}
+			<p>Welcome, {{ user.username }}. Thanks for logging in.</p>
+		{% else %}
+			<a href="/api-auth/login">Login</a>
+		{% endif %}
+	</div>
 	<div class="container fluid">
 		<div id="app" class="row fullheight">
 			<div class="col-sm-2 bg-primary">
@@ -35,9 +42,18 @@
 			app = new Vue({
 				el: "#app",
 				data: {
-					queues: queues,
-					tasks: tasks,
-					details: details
+					queues: [],
+					tasks: [],
+					details: ""
+				},
+				created: function() {
+					axios.get("/api/queues/")
+					.then(function (response) {
+						queues = response.data;
+					})
+					.catch(function (error) {
+						console.log(error);
+					});
 				},
 				methods: {
 					loadDetails: function(hub) {
