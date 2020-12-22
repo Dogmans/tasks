@@ -203,6 +203,10 @@ class TestApi(TestBase):
 		# Check that our task is in there
 		self.assertEqual(response.status_code, 200, response.data)
 
+	def test_queue_insert_task(self):
+		# TODO - test inserting a task between 2 others
+		pass
+
 	def test_queue_remove_task(self):
 		'''
 		Remove an existing task from the queue
