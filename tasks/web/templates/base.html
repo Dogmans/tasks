@@ -24,8 +24,9 @@
 			{% verbatim %}
 			<div class="col-sm-2 bg-primary fullheight">
 				<div v-for="queue in queues">
-				{{ queue.title }}
+					{{ queue.title }}
 				</div>
+				<div class="btn btn-secondary" v-on:click="createQueue">Add</div>
 			</div>
 			<div class="col-sm-2 bg-secondary">
 				b
@@ -47,40 +48,36 @@
 				el: "#app",
 				data: {
 					queues: [],
+					queue_id: null,
 					tasks: [],
+					task_id: null,
 					details: ""
 				},
 				mounted () {
-					var self = this;
-					axios.get("/api/queues/")
-					.then(function (response) {
-						self.queues = response.data;
-					})
-					.catch(function (error) {
-						console.log(error);
-					});
+					this.listQueues();
 				},
 				methods: {
-					loadDetails: function(hub) {
-						document.location.href = "/hub/" + hub.identifier;
+					listQueues: function () {
+						self = this;
+						axios.get("/api/queues/")
+						.then(function (response) {
+							self.queues = response.data;
+						})
+						.catch(function (error) {
+							console.log(error);
+						});
 					},
-					highlight: function(hub) {
-						markersById[hub.identifier].setStyle({radius: 15});
-					},
-					highlightReset: function(hub) {
-						markersById[hub.identifier].setStyle({radius: 10});
-					},
-					badgeClassByStatus: function(entity) {
-						switch(entity.status) {
-							case "ERROR":
-								return "badge-danger";
-							case "WARNING":
-								return "badge-warning";
-							case "OK":
-								return "badge-success";
-							default:
-								return "badge-secondary";
-						}
+					createQueue: function () {
+						self = this;
+						axios.post("/api/queues/", {
+							title: "Test"
+						})
+						.then(function (response) {
+							self.queues = response.data;
+						})
+						.catch(function (error) {
+							console.log(error);
+						});
 					},
 				},
 				filters: {
