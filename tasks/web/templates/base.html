@@ -12,7 +12,7 @@
 	{% block head %}{% endblock %}
 </head>
 <body>
-	<div class="nav bg-dark text-white p-2">
+	<div class="nav bg-dark text-white p-2 border-bottom">
 		{% if user.is_authenticated %}
 			<p class="m-0">Welcome, {{ user.username }}. Thanks for logging in.</p>
 		{% else %}
@@ -24,7 +24,7 @@
 		<div class="container-fluid">
 			<div class="row fullheight">
 				<div class="col-sm-2 bg-dark">
-					<div v-for="queue in queues" v-bind:class="[queue.id == queue_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
+					<div v-for="queue in queues" v-bind:class="[queue.id == queue_id ? 'bg-primary' : 'bg-secondary', 'row border-bottom p-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(queue)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ queue.title }}</span>
 							<div class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen" ></i></div>
@@ -36,7 +36,7 @@
 					</div>
 				</div>
 				<div class="col-sm-2 bg-dark">
-					<div v-for="task in tasks" v-bind:class="[task.id == task_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
+					<div v-for="task in tasks" v-bind:class="[task.id == task_id ? 'bg-primary' : 'bg-secondary', 'row border-bottom p-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(task)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ task.title }}</span>
 							<div class="btn" v-on:click="showUpdateTaskModal(task)"><i class="fa fa-pen" ></i></div>
