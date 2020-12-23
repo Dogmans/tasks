@@ -23,12 +23,17 @@
 	<span id="app">
 		<div class="container-fluid">
 			<div class="row fullheight">
-				<div class="col-sm-2 bg-primary fullheight">
-					<div v-for="queue in queues">
-						<span>{{ queue.title }}</span>
-						<div class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen" ></i></div>
+				<div class="col-sm-2 bg-dark fullheight p-0">
+					<div v-for="queue in queues" class="row bg-primary border p-2 ">
+						<div class="col-sm-12 d-flex">
+							<span class="mr-auto">{{ queue.title }}</span>
+							<div class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen" ></i></div>
+							<div class="btn" v-on:click="showDeleteQueueModal(queue)"><i class="fa fa-times-circle" ></i></div>
+						</div>
 					</div>
-					<div class="btn btn-secondary" v-on:click="showCreateQueueModal">Add</div>
+					<div class="row">
+						<div class="btn btn-secondary col-sm-12" v-on:click="showCreateQueueModal">Add</div>
+					</div>
 				</div>
 				<div class="col-sm-2 bg-secondary">
 					b
@@ -119,6 +124,13 @@
 						];
 						jQuery("#createModal").modal({});
 					},
+					showDeleteQueueModal(queue) {
+						this.form.url = "/api/queues/" + queue.id + "/";
+						this.form.title = "Delete Queue";
+						this.form.method = "delete";
+						this.form.fields = [];
+						jQuery("#createModal").modal({});
+					},
 					handleModal() {
 						jQuery("#createModal").modal("hide");
 						var payload = {};
@@ -131,16 +143,21 @@
 							data: payload
 						})
 						.then(function (response) {
-							// If in list already then just update
-							const results = self.queues.filter(q => q.id == response.data.id);
-							if (results.length) {
-								for (key in response.data) {
-									results[0][key] = response.data[key]
+							if (response.data) {
+								// If in list already then just update
+								const results = self.queues.filter(q => q.id == response.data.id);
+								if (results.length) {
+									for (key in response.data) {
+										results[0][key] = response.data[key]
+									}
+									return;
 								}
-								return;
+								// Not in the list already so append
+								self.queues.push(response.data);
+							} else {
+								// Assume it's a delete so refresh
+								self.listQueues();
 							}
-							// Not in the list already so append
-							self.queues.push(response.data);
 						})
 						.catch(function (error) {
 							console.log(error);
