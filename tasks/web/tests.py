@@ -150,6 +150,18 @@ class TestApi(TestBase):
 		response = self._client.get("/api/queues/")
 		self.assertEqual(len(response.data), 1)
 
+	def test_update_queue(self):
+		response = self._client.put(
+			"/api/queues/" + str(self._queue.id) + "/",
+			{
+				"title": "Testing 456"
+			},
+			format="json"
+		)
+		# Check it was updated and not created
+		self.assertEqual(response.status_code, 200, response.data)
+		self.assertEqual(Queue.objects.all().count(), 1, Queue.objects.all())
+
 	def test_create_retrieve_queues(self):
 		'''
 		Create a queue with and retrieve via REST
