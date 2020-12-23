@@ -23,7 +23,7 @@
 	<span id="app">
 		<div class="container-fluid">
 			<div class="row fullheight">
-				<div class="col-sm-2 bg-dark p-0">
+				<div class="col-sm-2 bg-dark">
 					<div v-for="queue in queues" v-bind:class="[queue.id == queue_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(queue)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ queue.title }}</span>
@@ -35,7 +35,7 @@
 						<div class="btn btn-secondary col-sm-12" v-on:click="showCreateQueueModal">Add</div>
 					</div>
 				</div>
-				<div class="col-sm-2 bg-dark p-0">
+				<div class="col-sm-2 bg-dark">
 					<div v-for="task in tasks" v-bind:class="[task.id == task_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(task)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ task.title }}</span>
@@ -69,8 +69,8 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" v-on:click="handleModal">Save changes</button>
+						<button type="button" class="btn btn-secondary" v-on:click="handleModal(true)">Close</button>
+						<button type="button" class="btn btn-primary" v-on:click="handleModal(false)">Save changes</button>
 					</div>
 				</div>
 			</div>
@@ -185,8 +185,11 @@
 						this.form.fields = [];
 						jQuery("#createModal").modal("show");
 					},
-					handleModal() {
+					handleModal(close) {
 						jQuery("#createModal").modal("hide");
+						if (close) {
+							return;
+						}
 						var payload = {};
 						for (field of this.form.fields) {
 							payload[field.name] = field.value;
