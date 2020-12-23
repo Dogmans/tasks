@@ -24,9 +24,9 @@
 		<div class="container-fluid">
 			<div class="row fullheight">
 				<div class="col-sm-2 bg-dark fullheight p-0">
-					<div v-for="queue in queues" class="row bg-primary border p-2 ">
-						<div class="col-sm-12 d-flex">
-							<span class="mr-auto">{{ queue.title }}</span>
+					<div v-for="queue in queues" v-bind:class="[queue.id == queue_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
+						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(queue)">
+							<span style="margin-right: auto" class="cursor-pointer">{{ queue.title }}</span>
 							<div class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen" ></i></div>
 							<div class="btn" v-on:click="showDeleteQueueModal(queue)"><i class="fa fa-times-circle" ></i></div>
 						</div>
@@ -96,7 +96,7 @@
 					this.listQueues();
 				},
 				methods: {
-					listQueues: function () {
+					listQueues() {
 						self = this;
 						axios.get("/api/queues/")
 						.then(function (response) {
@@ -105,6 +105,9 @@
 						.catch(function (error) {
 							console.log(error);
 						});
+					},
+					selectQueue(queue) {
+						this.queue_id = queue.id;
 					},
 					showCreateQueueModal() {
 						this.form.url = "/api/queues/";
