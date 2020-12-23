@@ -23,7 +23,7 @@
 	<span id="app">
 		<div class="container-fluid">
 			<div class="row fullheight">
-				<div class="col-sm-2 bg-dark fullheight p-0">
+				<div class="col-sm-2 bg-dark p-0">
 					<div v-for="queue in queues" v-bind:class="[queue.id == queue_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(queue)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ queue.title }}</span>
@@ -35,8 +35,17 @@
 						<div class="btn btn-secondary col-sm-12" v-on:click="showCreateQueueModal">Add</div>
 					</div>
 				</div>
-				<div class="col-sm-2 bg-secondary">
-					b
+				<div class="col-sm-2 bg-dark p-0">
+					<div v-for="task in tasks" v-bind:class="[task.id == task_id ? 'bg-primary' : 'bg-secondary', 'row border p-2']">
+						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(task)">
+							<span style="margin-right: auto" class="cursor-pointer">{{ task.title }}</span>
+							<div class="btn" v-on:click="showUpdateTaskModal(task)"><i class="fa fa-pen" ></i></div>
+							<div class="btn" v-on:click="showDeleteTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="btn btn-secondary col-sm-12" v-on:click="showCreateTaskModal">Add</div>
+					</div>
 				</div>
 				<div class="col-sm-8 bg-info">
 					c
@@ -106,8 +115,21 @@
 							console.log(error);
 						});
 					},
+					listTasks(queue_id) {
+						self = this;
+						axios.get("/api/queues/" + queue_id + "/tasks/")
+						.then(function (response) {
+							self.tasks = response.data;
+						})
+						.catch(function (error) {
+							console.log(error);
+						});
+					},
 					selectQueue(queue) {
 						this.queue_id = queue.id;
+					},
+					selectTask(task) {
+						this.task_id = task.id;
 					},
 					showCreateQueueModal() {
 						this.form.url = "/api/queues/";
@@ -116,7 +138,7 @@
 						this.form.fields = [
 							{name: "title", value: ""}
 						];
-						jQuery("#createModal").modal({});
+						jQuery("#createModal").modal("show");
 					},
 					showUpdateQueueModal(queue) {
 						this.form.url = "/api/queues/" + queue.id + "/";
@@ -125,14 +147,43 @@
 						this.form.fields = [
 							{name: "title", value: queue.title}
 						];
-						jQuery("#createModal").modal({});
+						jQuery("#createModal").modal("show");
 					},
 					showDeleteQueueModal(queue) {
 						this.form.url = "/api/queues/" + queue.id + "/";
 						this.form.title = "Delete Queue";
 						this.form.method = "delete";
 						this.form.fields = [];
-						jQuery("#createModal").modal({});
+						jQuery("#createModal").modal("show");
+					},
+					showCreateTaskModal() {
+						// TODO - tasks should always be created in the context of a queue
+						// Method at the other ned needs to change what it does
+						this.form.url = "/api/queues/" + this.queue_id + "/tasks/";
+						this.form.title = "Add New Task to Queue";
+						this.form.method = "post";
+						this.form.fields = [
+							{name: "title", value: ""},
+							{name: "details", value: ""}
+						];
+						jQuery("#createModal").modal("show");
+					},
+					showUpdateTaskModal(task) {
+						this.form.url = "/api/tasks/";
+						this.form.title = "Update Task";
+						this.form.method = "put";
+						this.form.fields = [
+							{name: "title", value: task.title},
+							{name: "details", value: task.details}
+						];
+						jQuery("#createModal").modal("show");
+					},
+					showDeleteTaskModal(task) {
+						this.form.url = "/api/queues/" + queue.id + "/tasks/";
+						this.form.title = "Remove Task From Queue";
+						this.form.method = "delete";
+						this.form.fields = [];
+						jQuery("#createModal").modal("show");
 					},
 					handleModal() {
 						jQuery("#createModal").modal("hide");
@@ -173,7 +224,12 @@
 						value = value.toString()
 						return value.charAt(0).toUpperCase() + value.slice(1)
 					}
-				}
+				},
+				watch: {
+					queue_id: function (val) {
+						this.listTasks(val);
+					}
+				},
 			});
 		});
 	</script>
