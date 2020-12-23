@@ -83,7 +83,8 @@
 					form: {
 						url: "",
 						title: "",
-						fields: []
+						fields: [],
+						method: "post"
 					}
 				},
 				mounted () {
@@ -103,6 +104,7 @@
 					showCreateQueueModal() {
 						this.form.url = "/api/queues/";
 						this.form.title = "Add Queue";
+						this.form.method = "post";
 						this.form.fields = [
 							{name: "title", value: ""}
 						];
@@ -111,6 +113,7 @@
 					showUpdateQueueModal(queue) {
 						this.form.url = "/api/queues/" + queue.id + "/";
 						this.form.title = "Update Queue";
+						this.form.method = "put";
 						this.form.fields = [
 							{name: "title", value: queue.title}
 						];
@@ -122,9 +125,11 @@
 						for (field of this.form.fields) {
 							payload[field.name] = field.value;
 						}
-						axios.post(this.form.url,
-							payload
-						)
+						axios({
+							method: this.form.method,
+							url: this.form.url,
+							data: payload
+						})
 						.then(function (response) {
 							// TODO - different handlers based on modal type
 							self.queues.push(response.data);
