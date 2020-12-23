@@ -12,31 +12,57 @@
 	{% block head %}{% endblock %}
 </head>
 <body>
-	<div class="nav>
+	<div class="nav bg-dark text-white p-2">
 		{% if user.is_authenticated %}
-			<p>Welcome, {{ user.username }}. Thanks for logging in.</p>
+			<p class="m-0">Welcome, {{ user.username }}. Thanks for logging in.</p>
 		{% else %}
-			<a href="/api-auth/login">Login</a>
+			<a class="m-0" href="/api-auth/login">Login</a>
 		{% endif %}
 	</div>
-	<div class="container fluid">
-		<div id="app" class="row fullheight">
-			{% verbatim %}
-			<div class="col-sm-2 bg-primary fullheight">
-				<div v-for="queue in queues">
-					{{ queue.title }}
+	{% verbatim %}
+	<span id="app">
+		<div class="container-fluid">
+			<div class="row fullheight">
+				<div class="col-sm-2 bg-primary fullheight">
+					<div v-for="queue in queues">
+						<span>{{ queue.title }}</span>
+						<div class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen" ></i></div>
+					</div>
+					<div class="btn btn-secondary" v-on:click="showCreateQueueModal">Add</div>
 				</div>
-				<div class="btn btn-secondary" v-on:click="createQueue">Add</div>
+				<div class="col-sm-2 bg-secondary">
+					b
+				</div>
+				<div class="col-sm-8 bg-info">
+					c
+				</div>
 			</div>
-			<div class="col-sm-2 bg-secondary">
-				b
-			</div>
-			<div class="col-sm-8 bg-info">
-				c
-			</div>
-			{% endverbatim %}
 		</div>
-	</div>
+		<!-- Modal -->
+		<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="false">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="createModalLabel">{{ form.title }}</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group" v-for="field in form.fields">
+							<label for="{{ field.name }}">{{ field.name | capitalize }}</label>
+							<input type="text" v-model="field.value" class="form-control" v-bind:id="'form_' + field.name" aria-describedby="{{ field.name }}" v-bind:placeholder="'Enter ' + field.name">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" v-on:click="handleModal">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</span>
+	{% endverbatim %}*
 	<script src="{% static "/js/jquery-3.2.1.min.js" %}"></script>
 	<script src="{% static "/js/bootstrap.min.js" %}"></script>
 	<script src="{% static "/js/moment-with-locales.min.js" %}"></script>
@@ -53,7 +79,12 @@
 					queue_id: null,
 					tasks: [],
 					task_id: null,
-					details: ""
+					details: "",
+					form: {
+						url: "",
+						title: "",
+						fields: []
+					}
 				},
 				mounted () {
 					this.listQueues();
@@ -69,12 +100,33 @@
 							console.log(error);
 						});
 					},
-					createQueue: function () {
-						self = this;
-						axios.post("/api/queues/", {
-							title: "Test"
-						})
+					showCreateQueueModal() {
+						this.form.url = "/api/queues/";
+						this.form.title = "Add Queue";
+						this.form.fields = [
+							{name: "title", value: ""}
+						];
+						jQuery("#createModal").modal({});
+					},
+					showUpdateQueueModal(queue) {
+						this.form.url = "/api/queues/" + queue.id + "/";
+						this.form.title = "Update Queue";
+						this.form.fields = [
+							{name: "title", value: queue.title}
+						];
+						jQuery("#createModal").modal({});
+					},
+					handleModal() {
+						jQuery("#createModal").modal("hide");
+						var payload = {};
+						for (field of this.form.fields) {
+							payload[field.name] = field.value;
+						}
+						axios.post(this.form.url,
+							payload
+						)
 						.then(function (response) {
+							// TODO - different handlers based on modal type
 							self.queues.push(response.data);
 						})
 						.catch(function (error) {
@@ -83,12 +135,10 @@
 					},
 				},
 				filters: {
-					truncate: function (text, length, suffix) {
-						if (text.length > length) {
-							return text.substring(0, length - suffix.length) + suffix;
-						} else {
-							return text;
-						}
+					capitalize: function (value) {
+						if (!value) return ''
+						value = value.toString()
+						return value.charAt(0).toUpperCase() + value.slice(1)
 					}
 				}
 			});
