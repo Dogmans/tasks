@@ -157,8 +157,6 @@
 						jQuery("#createModal").modal("show");
 					},
 					showCreateTaskModal() {
-						// TODO - tasks should always be created in the context of a queue
-						// Method at the other ned needs to change what it does
 						this.form.url = "/api/queues/" + this.queue_id + "/tasks/";
 						this.form.title = "Add New Task to Queue";
 						this.form.method = "post";
