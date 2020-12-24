@@ -40,7 +40,7 @@
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(task)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ task.title }}</span>
 							<div class="btn" v-on:click="showUpdateTaskModal(task)"><i class="fa fa-pen" ></i></div>
-							<div class="btn" v-on:click="showDeleteTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
+							<div class="btn" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
 						</div>
 					</div>
 					<div class="row">
@@ -105,6 +105,12 @@
 					this.listQueues();
 				},
 				methods: {
+					selectQueue(queue) {
+						this.queue_id = queue.id;
+					},
+					selectTask(task) {
+						this.task_id = task.id;
+					},
 					listQueues() {
 						self = this;
 						axios.get("/api/queues/")
@@ -115,21 +121,15 @@
 							console.log(error);
 						});
 					},
-					listTasks(queue_id) {
+					listTasks() {
 						self = this;
-						axios.get("/api/queues/" + queue_id + "/tasks/")
+						axios.get("/api/queues/" + this.queue_id + "/tasks/")
 						.then(function (response) {
 							self.tasks = response.data;
 						})
 						.catch(function (error) {
 							console.log(error);
 						});
-					},
-					selectQueue(queue) {
-						this.queue_id = queue.id;
-					},
-					selectTask(task) {
-						this.task_id = task.id;
 					},
 					showCreateQueueModal() {
 						this.form.url = "/api/queues/";
@@ -138,6 +138,7 @@
 						this.form.fields = [
 							{name: "title", value: ""}
 						];
+						this.form.callback = this.listQueues;
 						jQuery("#createModal").modal("show");
 					},
 					showUpdateQueueModal(queue) {
@@ -147,6 +148,7 @@
 						this.form.fields = [
 							{name: "title", value: queue.title}
 						];
+						this.form.callback = this.listQueues;
 						jQuery("#createModal").modal("show");
 					},
 					showDeleteQueueModal(queue) {
@@ -154,6 +156,7 @@
 						this.form.title = "Delete Queue";
 						this.form.method = "delete";
 						this.form.fields = [];
+						this.form.callback = this.listQueues;
 						jQuery("#createModal").modal("show");
 					},
 					showCreateTaskModal() {
@@ -164,23 +167,27 @@
 							{name: "title", value: ""},
 							{name: "details", value: ""}
 						];
+						this.form.callback = this.listTasks;
 						jQuery("#createModal").modal("show");
 					},
 					showUpdateTaskModal(task) {
-						this.form.url = "/api/tasks/";
+						this.form.url = "/api/tasks/" + task.id + "/";
 						this.form.title = "Update Task";
 						this.form.method = "put";
 						this.form.fields = [
 							{name: "title", value: task.title},
 							{name: "details", value: task.details}
 						];
+						this.form.callback = this.listTasks;
 						jQuery("#createModal").modal("show");
 					},
-					showDeleteTaskModal(task) {
-						this.form.url = "/api/queues/" + queue.id + "/tasks/";
+					showRemoveTaskModal(task) {
+						// N.B. this removes the task from the queue but does not delete
+						this.form.url = "/api/queues/" + this.queue_id + "/tasks/" + task.id + "/";
 						this.form.title = "Remove Task From Queue";
 						this.form.method = "delete";
 						this.form.fields = [];
+						this.form.callback = this.listTasks;
 						jQuery("#createModal").modal("show");
 					},
 					handleModal(close) {
@@ -192,27 +199,14 @@
 						for (field of this.form.fields) {
 							payload[field.name] = field.value;
 						}
+						self = this;
 						axios({
 							method: this.form.method,
 							url: this.form.url,
 							data: payload
 						})
 						.then(function (response) {
-							if (response.data) {
-								// If in list already then just update
-								const results = self.queues.filter(q => q.id == response.data.id);
-								if (results.length) {
-									for (key in response.data) {
-										results[0][key] = response.data[key]
-									}
-									return;
-								}
-								// Not in the list already so append
-								self.queues.push(response.data);
-							} else {
-								// Assume it's a delete so refresh
-								self.listQueues();
-							}
+							self.form.callback();
 						})
 						.catch(function (error) {
 							console.log(error);
