@@ -150,6 +150,10 @@ class TestApi(TestBase):
 		response = self._client.get("/api/queues/")
 		self.assertEqual(len(response.data), 1)
 
+	def test_queue_get_tasks(self):
+		response = self._client.get("/api/queues/" + str(self._queue.id) + "/tasks/")
+		self.assertEqual(len(response.data), 3)
+
 	def test_update_queue(self):
 		response = self._client.put(
 			"/api/queues/" + str(self._queue.id) + "/",
