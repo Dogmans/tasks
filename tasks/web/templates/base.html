@@ -111,25 +111,21 @@
 					selectTask(task) {
 						this.task_id = task.id;
 					},
-					listQueues() {
+					refreshData(array, url) {
 						self = this;
-						axios.get("/api/queues/")
+						axios.get(url)
 						.then(function (response) {
-							self.queues = response.data;
+							self[array] = response.data;
 						})
 						.catch(function (error) {
 							console.log(error);
 						});
+					}, 
+					listQueues() {
+						this.refreshData("queues", "/api/queues/");
 					},
 					listTasks() {
-						self = this;
-						axios.get("/api/queues/" + this.queue_id + "/tasks/")
-						.then(function (response) {
-							self.tasks = response.data;
-						})
-						.catch(function (error) {
-							console.log(error);
-						});
+						this.refreshData("tasks", "/api/queues/" + this.queue_id + "/tasks/");
 					},
 					showCreateQueueModal() {
 						this.form.url = "/api/queues/";
