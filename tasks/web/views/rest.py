@@ -32,7 +32,7 @@ class QueueViewSet(viewsets.ModelViewSet):
 		permissions.IsAuthenticated,
 		IsOwnerOrReadOnly
 	]
-
+	
 	def get_queryset(self):
 		return Queue.objects.filter(owner=self.request.user)
 
@@ -41,16 +41,35 @@ class QueueViewSet(viewsets.ModelViewSet):
 		response_status = status.HTTP_200_OK
 		queue = self.get_object()
 		task_id = request.data.get("task_id")
-		if task_id:
+
+		if request.method == "POST":
+			if task_id:
+				# Add existing task to the queue
+				try:
+					task = Task.objects.get(owner=request.user, pk=task_id)
+				except Task.DoesNotExist:
+					return Response(status=status.HTTP_404_NOT_FOUND)
+			else:
+				# Create a new task and add it to the queue
+				try:
+					task = Task.objects.create(
+						owner=request.user,
+						title=request.data["title"],
+						details=request.data["details"]
+					)
+					task.save()
+				except Exception:
+					return Response(status=status.HTTP_400_BAD_REQUEST)
+
+			queue.append_task(task)
+			response_status = status.HTTP_201_CREATED
+
+		elif request.method == "DELETE":
 			try:
 				task = Task.objects.get(owner=request.user, pk=task_id)
 			except Task.DoesNotExist:
 				return Response(status=status.HTTP_404_NOT_FOUND)
 
-		if request.method == "POST":
-			queue.append_task(task)
-			response_status = status.HTTP_201_CREATED
-		elif request.method == "DELETE":
 			queue.remove_task(task)
 			response_status = status.HTTP_202_ACCEPTED
 
