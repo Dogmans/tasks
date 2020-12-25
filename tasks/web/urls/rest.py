@@ -12,6 +12,6 @@ router.register(r'users', views.UserViewSet)
 # The API URLs are now determined automatically by the router.
 urlpatterns = [
 	path('queues/<int:queue_id>/tasks/', views.QueueTaskListView.as_view()),
-	path('queuest/<int:queue_id>/tasks/<int:task_id>/', views.QueueTaskDetailView.as_view()),
+	path('queues/<int:queue_id>/tasks/<int:pk>/', views.QueueTaskDetailView.as_view()),
 	path('', include(router.urls)),
 ]

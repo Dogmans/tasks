@@ -59,7 +59,7 @@ class QueueTaskListView(QueueTaskView, generics.ListCreateAPIView):
 		# Pass existing object into serializer if we are passing exsting id
 		task_id = request.data.get("task_id")
 		if task_id:
-			task = self.get_queryset().get(pk=task_id)
+			task = Task.objects.get(owner=self.request.user, pk=task_id)
 			serializer = self.get_serializer(task, many=False)
 		else:
 			serializer = self.get_serializer(data=request.data)
@@ -71,56 +71,16 @@ class QueueTaskListView(QueueTaskView, generics.ListCreateAPIView):
 		return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 	def append_task(self, task):
-		queue = super().get_queue()
+		queue = self.get_queue()
 		queue.append_task(task)
 
 
 class QueueTaskDetailView(QueueTaskView, generics.DestroyAPIView):
-	def perform_delete(self, serializer):
-		task = self.get_queryset().get(pk=serializer.data["task_id"])
-		queue = super().get_queue()
-		queue.remove_task(task)
 
+	def perform_destroy(self, instance):
+		queue = self.get_queue()
+		queue.remove_task(instance)
 
-# @action(methods=["POST", "GET", "DELETE"], detail=True)
-# 	def tasks(self, request, *args, **kwargs):
-# 		response_status = status.HTTP_200_OK
-# 		queue = self.get_object()
-# 		task_id = request.data.get("task_id")
-# 
-# 		if request.method == "POST":
-# 			if task_id:
-# 				# Add existing task to the queue
-# 				try:
-# 					task = Task.objects.get(owner=request.user, pk=task_id)
-# 				except Task.DoesNotExist:
-# 					return Response(status=status.HTTP_404_NOT_FOUND)
-# 			else:
-# 				# Create a new task and add it to the queue
-# 				try:
-# 					task = Task.objects.create(
-# 						owner=request.user,
-# 						title=request.data["title"],
-# 						details=request.data["details"]
-# 					)
-# 					task.save()
-# 				except Exception:
-# 					return Response(status=status.HTTP_400_BAD_REQUEST)
-# 
-# 			queue.append_task(task)
-# 			response_status = status.HTTP_201_CREATED
-# 
-# 		elif request.method == "DELETE":
-# 			try:
-# 				task = Task.objects.get(owner=request.user, pk=task_id)
-# 			except Task.DoesNotExist:
-# 				return Response(status=status.HTTP_404_NOT_FOUND)
-# 
-# 			queue.remove_task(task)
-# 			response_status = status.HTTP_202_ACCEPTED
-# 
-# 		serializer = TaskSerializer(queue.tasks(), many=True)
-# 		return Response(serializer.data, status=response_status)
 
 class TaskViewSet(viewsets.ModelViewSet):
 	"""

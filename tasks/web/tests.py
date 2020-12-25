@@ -229,14 +229,11 @@ class TestApi(TestBase):
 		'''
 		task_to_remove = self._queue.tasks()[1]
 		response = self._client.delete(
-			"/api/queues/%s/tasks/" % self._queue.id,
-			{
-				"task_id": task_to_remove.id
-			},
+			"/api/queues/%s/tasks/%s/" % (self._queue.id, task_to_remove.id),
 			format="json"
 		)
-		self.assertEqual(response.status_code, 202, response)
-		self.assertEqual(len(response.data), 2, response)
+		self.assertEqual(response.status_code, 204, response)
+		self.assertEqual(len(self._queue.tasks()), 2, response)
 
 	def test_queue_anonymous_user(self):
 		'''
