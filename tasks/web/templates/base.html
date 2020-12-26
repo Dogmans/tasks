@@ -129,12 +129,17 @@
 					showCreateQueueModal() {
 						this.form = {
 							title: "Add Queue",
-							method: "post",
-							url: "/api/queues/",
 							fields: [
 								{name: "title", value: ""}
 							],
-							callback: this.listQueues
+							callback: this.listQueues,
+							buttons: [
+								{
+									title: "Add",
+									method: "post",
+									url: "/api/queues/"
+								}
+							]
 						}
 						jQuery("#createModal").modal("show");
 					},
