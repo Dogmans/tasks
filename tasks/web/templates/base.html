@@ -42,13 +42,13 @@
 						</div>
 					</div>
 					<div class="mt-2">
-						<div class="btn btn-success col-sm-12" v-on:click="showCreateTaskModal">Add</div>
+						<div class="btn btn-success col-sm-12" v-on:click="addTask">Add</div>
 					</div>
 				</div>
 				<div class="col-sm-8 bg-dark">
 					<div class="d-flex my-2 text-white bg-dark">
 						<input class="form-control" style="margin-right: auto" v-model="task.title">
-						<div class="btn text-white" v-on:click="showUpdateTaskModal(task)"><i class="fa fa-save" ></i></div>
+						<div class="btn text-white" v-on:click="saveTask(task)"><i class="fa fa-save" ></i></div>
 						<div class="btn text-white" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
 					</div>
 					<div class="d-flex h-75 text-white bg-dark">
@@ -178,41 +178,31 @@
 						}
 						jQuery("#createModal").modal("show");
 					},
-					showCreateTaskModal() {
-						this.form = {
-							title: "Add New Task to Queue",
-							fields: [
-								{name: "title", value: ""},
-								{name: "details", value: ""}
-							],
-							callback: this.listTasks,
-							buttons: [
-								{
-									title: "Add",
-									method: "post",
-									url: "/api/queues/" + this.queue_id + "/tasks/"
-								}
-							]
-						}
-						jQuery("#createModal").modal("show");
+					addTask() {
+						self = this;
+						axios({
+							method: "post",
+							url: "/api/queues/" + this.queue_id + "/tasks/",
+							data: {title: "New task"}
+						})
+						.then(function (response) {
+							self.tasks.push(response.data);
+						})
+						.catch(function (error) {
+							console.log(error);
+						});
 					},
-					showUpdateTaskModal(task) {
-						this.form = {
-							title: "Update Task",
-							fields: [
-								{name: "title", value: task.title},
-								{name: "details", value: task.details}
-							],
-							callback: this.listTasks,
-							buttons: [
-								{
-									title: "Update",
-									method: "put",
-									url: "/api/tasks/" + task.id + "/"
-								}
-							]
-						}
-						jQuery("#createModal").modal("show");
+					saveTask(task) {
+						axios({
+							method: "put",
+							url:  "/api/tasks/" + task.id + "/",
+							data: task
+						})
+						.then(function (response) {
+						})
+						.catch(function (error) {
+							console.log(error);
+						});
 					},
 					showRemoveTaskModal(task) {
 						this.form = {

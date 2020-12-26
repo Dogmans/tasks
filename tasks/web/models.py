@@ -63,7 +63,7 @@ class Task(models.Model):
 		on_delete=models.CASCADE
 	)
 	title = models.CharField(max_length=32)
-	details = models.TextField()
+	details = models.TextField(null=True)
 	created_on = models.DateTimeField(auto_now_add=True)
 	due_by = models.DateTimeField(
 		null=True,
