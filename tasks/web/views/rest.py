@@ -64,7 +64,7 @@ class QueueTaskListView(QueueTaskView, generics.ListCreateAPIView):
 		else:
 			serializer = self.get_serializer(data=request.data)
 			serializer.is_valid(raise_exception=True)
-			task = serializer.save()
+			task = serializer.save(owner=self.request.user)
 
 		self.append_task(task)
 		headers = self.get_success_headers(serializer.data)
