@@ -122,6 +122,8 @@ class TestModels(TestBase):
 		slot_count = Slot.objects.all().count()
 		self.assertEqual(slot_count, 0, slot_count)
 
+	# TODO - test queue deletion - it will delete slots but not orphaned tasks!
+	# TODO - when queue is deleted then it should actually search for these too
 	# TODO - test error handling where IDs don't exist
 
 
