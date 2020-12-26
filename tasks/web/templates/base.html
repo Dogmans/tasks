@@ -128,62 +128,73 @@
 						this.refreshData("tasks", "/api/queues/" + this.queue_id + "/tasks/");
 					},
 					showCreateQueueModal() {
-						this.form.url = "/api/queues/";
-						this.form.title = "Add Queue";
-						this.form.method = "post";
-						this.form.fields = [
-							{name: "title", value: ""}
-						];
-						this.form.callback = this.listQueues;
+						this.form = {
+							title: "Add Queue",
+							method: "post",
+							url: "/api/queues/",
+							fields: [
+								{name: "title", value: ""}
+							],
+							callback: this.listQueues
+						}
 						jQuery("#createModal").modal("show");
 					},
 					showUpdateQueueModal(queue) {
-						this.form.url = "/api/queues/" + queue.id + "/";
-						this.form.title = "Update Queue";
-						this.form.method = "put";
-						this.form.fields = [
-							{name: "title", value: queue.title}
-						];
-						this.form.callback = this.listQueues;
+						this.form = {
+							title: "Update Queue",
+							method: "put",
+							url: "/api/queues/" + queue.id + "/",
+							fields: [
+								{name: "title", value: queue.title}
+							],
+							callback: this.listQueues
+						}
 						jQuery("#createModal").modal("show");
 					},
 					showDeleteQueueModal(queue) {
-						this.form.url = "/api/queues/" + queue.id + "/";
-						this.form.title = "Delete Queue";
-						this.form.method = "delete";
-						this.form.fields = [];
-						this.form.callback = this.listQueues;
+						this.form = {
+							title: "Delete Queue",
+							method: "delete",
+							url: "/api/queues/" + queue.id + "/",
+							fields: [],
+							callback: this.listQueues
+						}
 						jQuery("#createModal").modal("show");
 					},
 					showCreateTaskModal() {
-						this.form.url = "/api/queues/" + this.queue_id + "/tasks/";
-						this.form.title = "Add New Task to Queue";
-						this.form.method = "post";
-						this.form.fields = [
-							{name: "title", value: ""},
-							{name: "details", value: ""}
-						];
-						this.form.callback = this.listTasks;
+						this.form = {
+							title: "Add New Task to Queue",
+							method: "post",
+							url: "/api/queues/" + this.queue_id + "/tasks/",
+							fields: [
+								{name: "title", value: ""},
+								{name: "details", value: ""}
+							],
+							callback: this.listTasks
+						}
 						jQuery("#createModal").modal("show");
 					},
 					showUpdateTaskModal(task) {
-						this.form.url = "/api/tasks/" + task.id + "/";
-						this.form.title = "Update Task";
-						this.form.method = "put";
-						this.form.fields = [
-							{name: "title", value: task.title},
-							{name: "details", value: task.details}
-						];
-						this.form.callback = this.listTasks;
+						this.form = {
+							title: "Update Task",
+							method: "put",
+							url: "/api/tasks/" + task.id + "/",
+							fields: [
+								{name: "title", value: task.title},
+								{name: "details", value: task.details}
+							],
+							callback: this.listTasks
+						}
 						jQuery("#createModal").modal("show");
 					},
 					showRemoveTaskModal(task) {
-						// N.B. this removes the task from the queue but does not delete
-						this.form.url = "/api/queues/" + this.queue_id + "/tasks/" + task.id + "/";
-						this.form.title = "Remove Task From Queue";
-						this.form.method = "delete";
-						this.form.fields = [];
-						this.form.callback = this.listTasks;
+						this.form = {
+							title: "Remove Task From Queue",
+							method: "delete",
+							url: "/api/queues/" + this.queue_id + "/tasks/" + task.id + "/",
+							fields: [],
+							callback: this.listTasks
+						}
 						jQuery("#createModal").modal("show");
 					},
 					handleModal(close) {
