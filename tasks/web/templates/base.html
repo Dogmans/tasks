@@ -32,7 +32,7 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="btn btn-secondary col-sm-12" v-on:click="showCreateQueueModal">Add</div>
+						<div class="btn btn-success col-sm-12 rounded-0" v-on:click="showCreateQueueModal">Add</div>
 					</div>
 				</div>
 				<div class="col-sm-2 bg-dark">
@@ -44,11 +44,12 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="btn btn-secondary col-sm-12" v-on:click="showCreateTaskModal">Add</div>
+						<div class="btn btn-success col-sm-12 rounded-0" v-on:click="showCreateTaskModal">Add</div>
 					</div>
 				</div>
 				<div class="col-sm-8 bg-info">
-					c
+					<textarea v-if="task_id" v-model="tasks[task_id]['details']">
+					</textarea>
 				</div>
 			</div>
 		</div>
