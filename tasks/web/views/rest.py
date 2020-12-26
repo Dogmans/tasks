@@ -80,6 +80,9 @@ class QueueTaskDetailView(QueueTaskView, generics.DestroyAPIView):
 	def perform_destroy(self, instance):
 		queue = self.get_queue()
 		queue.remove_task(instance)
+		# If not associated with any queues then delete task
+		if not instance.slot_set.count():
+			instance.delete()
 
 
 class TaskViewSet(viewsets.ModelViewSet):
