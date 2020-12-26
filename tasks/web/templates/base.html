@@ -39,8 +39,6 @@
 					<div v-for="listTask in tasks" v-bind:class="[listTask.id == task.id ? 'bg-primary' : 'bg-secondary', 'row border-bottom p-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(listTask)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ listTask.title }}</span>
-							<div class="btn" v-on:click="showUpdateTaskModal(listTask)"><i class="fa fa-pen" ></i></div>
-							<div class="btn" v-on:click="showRemoveTaskModal(listTask)"><i class="fa fa-times-circle" ></i></div>
 						</div>
 					</div>
 					<div class="row">
@@ -48,6 +46,9 @@
 					</div>
 				</div>
 				<div class="col-sm-8 bg-info">
+					<span style="margin-right: auto" class="cursor-pointer">{{ task.title }}</span>
+					<div class="btn" v-on:click="showUpdateTaskModal(task)"><i class="fa fa-pen" ></i></div>
+					<div class="btn" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
 					<textarea class="w-100 h-100" v-if="task" v-model="task.details">
 					</textarea>
 				</div>
