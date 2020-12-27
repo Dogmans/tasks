@@ -48,7 +48,7 @@
 				<div class="col-sm-8 bg-dark">
 					<div class="d-flex my-2 text-white bg-dark">
 						<input class="form-control" style="margin-right: auto" v-model="task.title">
-						<div class="btn text-white" v-on:click="saveTask(task)"><i class="fa fa-save" ></i></div>
+						<div v-if="Object.keys(taskSaveDict).length" class="text-white btn" v-on:click="saveTask(task)"><i class="fa fa-spin fa-save" ></i></div>
 						<div class="btn text-white" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
 					</div>
 					<div class="d-flex h-75 text-white bg-dark">
@@ -96,7 +96,7 @@
 					queue_id: null,
 					tasks: [],
 					task: {},
-					details: "",
+					taskSaveDict: {},
 					form: {
 						title: "",
 						fields: [],
@@ -105,6 +105,7 @@
 				},
 				mounted () {
 					this.listQueues();
+					this.timer = setInterval(this.saveChangedTasks, 10000);
 				},
 				methods: {
 					selectQueue(queue) {
@@ -205,6 +206,12 @@
 							console.log(error);
 						});
 					},
+					saveChangedTasks() {
+						for (var key in this.taskSaveDict) {
+							this.saveTask(this.taskSaveDict[key]);
+						}
+						this.taskSaveDict = {};
+					},
 					showRemoveTaskModal(task) {
 						this.form = {
 							title: "Remove Task From Queue",
@@ -258,6 +265,16 @@
 				watch: {
 					queue_id: function (val) {
 						this.listTasks(val);
+					},
+					task: {
+						handler(oldTask, newTask) {
+							// Check that the change is not due to selecting
+							// a different task
+							if (oldTask.id == newTask.id) {
+								this.taskSaveDict[newTask.id] = newTask;
+							}
+						},
+						deep:true
 					}
 				},
 			});
