@@ -186,7 +186,8 @@
 							data: {title: "New task"}
 						})
 						.then(function (response) {
-							self.tasks.push(response.data);
+							len = self.tasks.push(response.data);
+							self.task = self.tasks[len-1];
 						})
 						.catch(function (error) {
 							console.log(error);
