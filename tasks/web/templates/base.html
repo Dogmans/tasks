@@ -17,7 +17,7 @@
 			{% if user.is_authenticated %}
 				{% verbatim %}
 				<div v-for="listWorkspace in workspaces">
-					<div class="btn" v-on:click="selectWorkspace(listWorkspace)">{{ listWorkspace.title }}</div>
+					<div v-bind:class="[listWorkspace.id == workspace.id ? 'bg-primary' : 'bg-secondary', 'text-white btn rounded-2']" v-on:click="selectWorkspace(listWorkspace)">{{ listWorkspace.title }}</div>
 				</div>
 				<div class="btn btn-success" v-on:click="showCreateWorkspaceModal">Add</div>
 				<div style="margin-left: auto">
