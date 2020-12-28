@@ -129,25 +129,18 @@ class WorkspaceQueueListView(WorkspaceQueueView, generics.ListCreateAPIView):
 
 		if queue_id:
 			queue = Queue.objects.get(owner=self.request.user, pk=queue_id)
-			queue.workspace = workspace
 			serializer = self.get_serializer(queue, many=False)
 		else:
-			serializer = self.get_serializer(data=request.data, workspace=workspace)
+			serializer = self.get_serializer(data=request.data)
 
 		serializer.is_valid(raise_exception=True)
-		queue = serializer.save(owner=self.request.user)
+		queue = serializer.save(owner=self.request.user, workspace=workspace)
 		headers = self.get_success_headers(serializer.data)
 		return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class WorkspaceQueueDetailView(WorkspaceQueueView, generics.DestroyAPIView):
-
-	def perform_destroy(self, instance):
-		queue = self.get_queue()
-		queue.remove_task(instance)
-		# If not associated with any queues then delete task
-		if not instance.slot_set.count():
-			instance.delete()
+	pass
 
 
 class WorkspaceViewSet(viewsets.ModelViewSet):

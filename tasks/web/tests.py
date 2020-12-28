@@ -98,7 +98,8 @@ class TestModels(TestBase):
 	def test_copy_move_task(self):
 		target_queue = Queue(
 			owner = self._user,
-			title = "TargetQueue"
+			title = "TargetQueue",
+			workspace = self._workspace
 		)
 		target_queue.save()
 
@@ -253,6 +254,12 @@ class TestApi(TestBase):
 		self._client.logout()
 		response = self._client.get("/api/queues/")
 		self.assertEqual(response.status_code, 403, response)
+
+	def test_workspace_remove_queue(self):
+		'''
+		Test that queue can be removed from workspace
+		'''
+		self.assertEqual(1, 2)
 
 	def test_user_permissions(self):
 		'''
