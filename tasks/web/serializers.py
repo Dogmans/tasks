@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from web.models import Queue, Task
+from web.models import Queue, Task, Workspace
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,3 +27,9 @@ class TaskSerializer(serializers.ModelSerializer):
 		model = Task
 		# TODO - add optional due_by
 		fields = ["id", "title", "details"]
+
+
+class WorkspaceSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Workspace
+		fields = ["id", "title"]

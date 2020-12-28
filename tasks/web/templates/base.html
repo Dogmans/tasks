@@ -14,26 +14,32 @@
 <body class="background-color: bg-dark">
 	<span id="app">
 		<nav class="nav bg-secondary text-white p-2 mb-2">
-			<div>
-				<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
-			</div>
-			<div style="margin-left:auto" class="text-dark">
 			{% if user.is_authenticated %}
-				<p class="m-2">Welcome, {{ user.username }}. Thanks for logging in.</p>
+				<div v-for="listWorkspace in workspaces">
+					<div class="btn" v-on:click="selectWorkspace(listWorkspace)">{{ listWorkspace.title }}</div>
+				</div>
+				<div class="btn btn-success" v-on:click="showCreateWorkspaceModal">Add</div>
+				<div style="margin-left: auto">
+					<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
+				</div>
+				<div class="text-dark">
+					<p class="m-2">Welcome, {{ user.username }}. Thanks for logging in.</p>
+				</div>
 			{% else %}
-				<a class="m-2" href="/api-auth/login">Login</a>
+				<div class="text-dark" style="margin-left: auto">
+					<a class="m-2" href="/api-auth/login">Login</a>
+				</div>
 			{% endif %}
-			</div>
 		</nav>
 		{% verbatim %}
 		<div class="container-fluid">
 			<div class="row fullheight">
 				<div class="col-sm-2 bg-dark">
-					<div v-for="queue in queues" v-bind:class="[queue.id == queue_id ? 'bg-primary' : 'bg-secondary', 'p-2 mt-2 rounded-2']">
-						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(queue)">
-							<span style="margin-right: auto" class="cursor-pointer">{{ queue.title }}</span>
-							<div class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen" ></i></div>
-							<div class="btn" v-on:click="showDeleteQueueModal(queue)"><i class="fa fa-times-circle" ></i></div>
+					<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'bg-primary' : 'bg-secondary', 'p-2 mt-2 rounded-2']">
+						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(listQueue)">
+							<span style="margin-right: auto" class="cursor-pointer">{{ listQueue.title }}</span>
+							<div class="btn" v-on:click="showUpdateQueueModal(listQueue)"><i class="fa fa-pen" ></i></div>
+							<div class="btn" v-on:click="showDeleteQueueModal(listQueue)"><i class="fa fa-times-circle" ></i></div>
 						</div>
 					</div>
 					<div class="mt-2">
@@ -96,8 +102,10 @@
 			app = new Vue({
 				el: "#app",
 				data: {
+					workspaces: [],
+					workspace: {},
 					queues: [],
-					queue_id: null,
+					queue: {},
 					tasks: [],
 					task: {},
 					taskSaveDict: {},
@@ -113,8 +121,11 @@
 					this.timer = setInterval(this.saveChangedTasks, 10000);
 				},
 				methods: {
+					selectWorkspace(workspace) {
+						this.workspace = workspace;
+					},
 					selectQueue(queue) {
-						this.queue_id = queue.id;
+						this.queue = queue;
 					},
 					selectTask(task) {
 						this.task = task;
@@ -130,10 +141,33 @@
 						});
 					}, 
 					listQueues() {
-						this.refreshData("queues", "/api/queues/");
+						this.refreshData(
+							"queues",
+							"/api/workspaces/" + this.workspace.id + "/queues/"
+						);
 					},
 					listTasks() {
-						this.refreshData("tasks", "/api/queues/" + this.queue_id + "/tasks/");
+						this.refreshData(
+							"tasks",
+							"/api/queues/" + this.queue.id + "/tasks/"
+						);
+					},
+					showCreateWorkspaceModal() {
+						this.form = {
+							title: "Add Workspace",
+							fields: [
+								{name: "title", value: ""}
+							],
+							callback: this.listWorkspaces,
+							buttons: [
+								{
+									title: "Add",
+									method: "post",
+									url: "/api/workspaces/"
+								}
+							]
+						}
+						jQuery("#createModal").modal("show");
 					},
 					showCreateQueueModal() {
 						this.form = {
@@ -146,7 +180,7 @@
 								{
 									title: "Add",
 									method: "post",
-									url: "/api/queues/"
+									url: "/api/workspaces/" + workspace.id + "/"
 								}
 							]
 						}
@@ -188,7 +222,7 @@
 						self = this;
 						axios({
 							method: "post",
-							url: "/api/queues/" + this.queue_id + "/tasks/",
+							url: "/api/queues/" + this.queue.id + "/tasks/",
 							data: {title: "New task"}
 						})
 						.then(function (response) {
@@ -233,7 +267,7 @@
 								{
 									title: "Remove",
 									method: "delete",
-									url: "/api/queues/" + this.queue_id + "/tasks/" + task.id + "/"
+									url: "/api/queues/" + this.queue.id + "/tasks/" + task.id + "/"
 								},
 								{
 									title: "Remove from all",
@@ -275,8 +309,11 @@
 					}
 				},
 				watch: {
-					queue_id: function (val) {
-						this.listTasks(val);
+					workspace: function (val) {
+						this.listQueues();
+					},
+					queue: function (val) {
+						this.listTasks();
 					},
 					task: {
 						handler(oldTask, newTask) {

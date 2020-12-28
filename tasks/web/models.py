@@ -2,12 +2,22 @@ from django.db import models
 from web.sort_keys import key_next, key_between
 
 
+class Workspace(models.Model):
+	owner = models.ForeignKey(
+		"auth.User",
+		related_name="workspaces",
+		on_delete=models.CASCADE
+	)
+	title = models.CharField(max_length=32)
+
+
 class Queue(models.Model):
 	owner = models.ForeignKey(
 		"auth.User",
 		related_name="queues",
 		on_delete=models.CASCADE
 	)
+	workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE)
 	title = models.CharField(max_length=20)
 
 	def __str__(self):

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
 from rest_framework.test import APIClient
-from web.models import Queue, Slot, Task
+from web.models import Queue, Slot, Task, Workspace
 
 
 class TestBase(TestCase):
@@ -38,9 +38,16 @@ class TestBase(TestCase):
 			password="12345"
 		)
 
+		self._workspace = Workspace(
+			owner = self._user,
+			title = "TestWorkspace"
+		)
+		self._workspace.save()
+
 		self._queue = Queue(
 			owner = self._user,
-			title = "TestQueue"
+			title = "TestQueue",
+			workspace = self._workspace
 		)
 		self._queue.save()
 
@@ -149,11 +156,11 @@ class TestApi(TestBase):
 		self.assertEqual(response.data["id"], task_id)
 
 	def test_get_queues(self):
-		response = self._client.get("/api/queues/")
+		response = self._client.get("/api/workspaces/%s/queues/" % self._workspace.id)
 		self.assertEqual(len(response.data), 1)
 
 	def test_queue_get_tasks(self):
-		response = self._client.get("/api/queues/" + str(self._queue.id) + "/tasks/")
+		response = self._client.get("/api/queues/%s/tasks/" % self._queue.id)
 		self.assertEqual(len(response.data), 3)
 
 	def test_update_queue(self):
@@ -173,7 +180,7 @@ class TestApi(TestBase):
 		Create a queue with and retrieve via REST
 		'''
 		response = self._client.post(
-			"/api/queues/",
+			"/api/workspaces/%s/queues/" % self._workspace.id,
 			{"title": "Testing 123"},
 			format="json"
 		)
@@ -181,7 +188,7 @@ class TestApi(TestBase):
 		self.assertEqual(response.status_code, 201, response.data)
 
 		# Check we now have 2 queues
-		response = self._client.get("/api/queues/")
+		response = self._client.get("/api/workspaces/%s/queues/" % self._workspace.id)
 		self.assertEqual(len(response.data), 2)
 
 	def test_queue_append_task(self):

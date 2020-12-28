@@ -8,9 +8,12 @@ from rest_framework import permissions
 from rest_framework import status
 from rest_framework import viewsets
 
-from web.models import Queue, Task
+from web.models import Queue, Task, Workspace
 from web.permissions import IsOwnerOrReadOnly
-from web.serializers import QueueSerializer, TaskSerializer, UserSerializer
+from web.serializers import QueueSerializer, TaskSerializer, UserSerializer, WorkspaceSerializer
+
+
+# TODO - don't let a queue be created that points at a workspace that the user doesn't own 
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -47,6 +50,7 @@ class QueueTaskView():
 	def get_queue(self):
 		return Queue.objects.get(owner=self.request.user, id=self.kwargs.get("queue_id"))
 
+	# TODO - order by slot sortorder
 	def get_queryset(self):
 		return Task.objects.filter(slot__queue=(
 			self.get_queue()
@@ -90,7 +94,6 @@ class TaskViewSet(viewsets.ModelViewSet):
 	This viewset automatically provides `list`, `create`, `retrieve`,
 	`update` and `destroy` actions.
 	"""
-	# https://stackoverflow.com/questions/22760191/django-rest-framework-permissions-for-create-in-viewset
 	serializer_class = TaskSerializer
 	permission_classes = [
 		permissions.IsAuthenticated,
@@ -99,6 +102,67 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 	def get_queryset(self):
 		return Task.objects.filter(owner=self.request.user)
+
+	def perform_create(self, serializer):
+		serializer.save(owner=self.request.user)
+
+
+class WorkspaceQueueView():
+	serializer_class = QueueSerializer
+
+	def get_workspace(self):
+		return Workspace.objects.get(
+			owner=self.request.user,
+			id=self.kwargs.get("workspace_id")
+		)
+
+	def get_queryset(self):
+		return self.get_workspace().queue_set.all().order_by("title")
+
+
+class WorkspaceQueueListView(WorkspaceQueueView, generics.ListCreateAPIView):
+
+	def create(self, request, *args, **kwargs):
+		# Pass existing object into serializer if we are passing exsting id
+		queue_id = request.data.get("queue_id")
+		workspace = self.get_workspace()
+
+		if queue_id:
+			queue = Queue.objects.get(owner=self.request.user, pk=queue_id)
+			queue.workspace = workspace
+			serializer = self.get_serializer(queue, many=False)
+		else:
+			serializer = self.get_serializer(data=request.data, workspace=workspace)
+
+		serializer.is_valid(raise_exception=True)
+		queue = serializer.save(owner=self.request.user)
+		headers = self.get_success_headers(serializer.data)
+		return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class WorkspaceQueueDetailView(WorkspaceQueueView, generics.DestroyAPIView):
+
+	def perform_destroy(self, instance):
+		queue = self.get_queue()
+		queue.remove_task(instance)
+		# If not associated with any queues then delete task
+		if not instance.slot_set.count():
+			instance.delete()
+
+
+class WorkspaceViewSet(viewsets.ModelViewSet):
+	"""
+	This viewset automatically provides `list`, `create`, `retrieve`,
+	`update` and `destroy` actions.
+	"""
+	serializer_class = WorkspaceSerializer
+	permission_classes = [
+		permissions.IsAuthenticated,
+		IsOwnerOrReadOnly
+	]
+
+	def get_queryset(self):
+		return Workspace.objects.filter(owner=self.request.user).order_by("title")
 
 	def perform_create(self, serializer):
 		serializer.save(owner=self.request.user)
