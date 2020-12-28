@@ -11,16 +11,21 @@
 	<title>{% block title %}Tasks{% endblock %}</title>
 	{% block head %}{% endblock %}
 </head>
-<body>
-	<div class="nav bg-dark text-white p-2 border-bottom">
-		{% if user.is_authenticated %}
-			<p class="m-0">Welcome, {{ user.username }}. Thanks for logging in.</p>
-		{% else %}
-			<a class="m-0" href="/api-auth/login">Login</a>
-		{% endif %}
-	</div>
-	{% verbatim %}
+<body class="background-color: bg-dark">
 	<span id="app">
+		<nav class="nav bg-secondary text-white p-2 mb-2">
+			<div>
+				<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
+			</div>
+			<div style="margin-left:auto" class="text-dark">
+			{% if user.is_authenticated %}
+				<p class="m-2">Welcome, {{ user.username }}. Thanks for logging in.</p>
+			{% else %}
+				<a class="m-2" href="/api-auth/login">Login</a>
+			{% endif %}
+			</div>
+		</nav>
+		{% verbatim %}
 		<div class="container-fluid">
 			<div class="row fullheight">
 				<div class="col-sm-2 bg-dark">
@@ -48,7 +53,6 @@
 				<div class="col-sm-8 bg-dark">
 					<div class="d-flex my-2 text-white bg-dark">
 						<input class="form-control" style="margin-right: auto" v-model="task.title">
-						<div v-if="Object.keys(taskSaveDict).length" class="text-white btn" v-on:click="saveTask(task)"><i class="fa fa-spin fa-save" ></i></div>
 						<div class="btn text-white" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
 					</div>
 					<div class="d-flex h-75 text-white bg-dark">
@@ -78,8 +82,8 @@
 				</div>
 			</div>
 		</div>
+		{% endverbatim %}*
 	</span>
-	{% endverbatim %}*
 	<script src="{% static "/js/jquery-3.2.1.min.js" %}"></script>
 	<script src="{% static "/js/bootstrap.min.js" %}"></script>
 	<script src="{% static "/js/moment-with-locales.min.js" %}"></script>
@@ -97,6 +101,7 @@
 					tasks: [],
 					task: {},
 					taskSaveDict: {},
+					saving: false,
 					form: {
 						title: "",
 						fields: [],
@@ -206,11 +211,18 @@
 							console.log(error);
 						});
 					},
+					showSaveSpinner() {
+						this.saving = true;
+						setTimeout(() => {this.saving = false}, 1000);
+					},
 					saveChangedTasks() {
-						for (var key in this.taskSaveDict) {
-							this.saveTask(this.taskSaveDict[key]);
+						if (Object.keys(this.taskSaveDict).length) {
+							this.showSaveSpinner();
+							for (var key in this.taskSaveDict) {
+								this.saveTask(this.taskSaveDict[key]);
+							}
+							this.taskSaveDict = {};
 						}
-						this.taskSaveDict = {};
 					},
 					showRemoveTaskModal(task) {
 						this.form = {
