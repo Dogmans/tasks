@@ -255,6 +255,19 @@ class TestApi(TestBase):
 		response = self._client.get("/api/queues/")
 		self.assertEqual(response.status_code, 403, response)
 
+	def test_workspace_add_queue(self):
+		'''
+		Test that queue can be added to workspace
+		'''
+		response = self._client.post(
+			"/api/workspaces/%s/queues/" % self._workspace.id,
+			{
+				"title": "Another queue"
+			},
+			format="json"
+		)
+		self.assertEqual(self._workspace.queue_set.all().count(), 2)
+
 	def test_workspace_remove_queue(self):
 		'''
 		Test that queue can be removed from workspace

@@ -15,6 +15,7 @@
 	<span id="app">
 		<nav class="nav bg-secondary text-white p-2 mb-2">
 			{% if user.is_authenticated %}
+				{% verbatim %}
 				<div v-for="listWorkspace in workspaces">
 					<div class="btn" v-on:click="selectWorkspace(listWorkspace)">{{ listWorkspace.title }}</div>
 				</div>
@@ -22,6 +23,7 @@
 				<div style="margin-left: auto">
 					<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
 				</div>
+				{% endverbatim %}
 				<div class="text-dark">
 					<p class="m-2">Welcome, {{ user.username }}. Thanks for logging in.</p>
 				</div>
@@ -42,8 +44,8 @@
 							<div class="btn" v-on:click="showDeleteQueueModal(listQueue)"><i class="fa fa-times-circle" ></i></div>
 						</div>
 					</div>
-					<div class="mt-2">
-						<div class="btn btn-success col-sm-12" v-on:click="showCreateQueueModal">Add</div>
+					<div v-if="workspace.id" class="mt-2">
+						<div class="btn btn-success col-sm-12" v-on:click="showCreateQueueModal()">Add</div>
 					</div>
 				</div>
 				<div class="col-sm-2 bg-dark">
@@ -52,7 +54,7 @@
 							<span style="margin-right: auto" class="cursor-pointer">{{ listTask.title }}</span>
 						</div>
 					</div>
-					<div class="mt-2">
+					<div v-if="queue.id" class="mt-2">
 						<div class="btn btn-success col-sm-12" v-on:click="addTask">Add</div>
 					</div>
 				</div>
@@ -117,7 +119,7 @@
 					}
 				},
 				mounted () {
-					this.listQueues();
+					this.listWorkspaces();
 					this.timer = setInterval(this.saveChangedTasks, 10000);
 				},
 				methods: {
@@ -139,7 +141,13 @@
 						.catch(function (error) {
 							console.log(error);
 						});
-					}, 
+					},
+					listWorkspaces() {
+						this.refreshData(
+							"workspaces",
+							"/api/workspaces/"
+						);
+					},
 					listQueues() {
 						this.refreshData(
 							"queues",
@@ -180,7 +188,7 @@
 								{
 									title: "Add",
 									method: "post",
-									url: "/api/workspaces/" + workspace.id + "/"
+									url: "/api/workspaces/" + this.workspace.id + "/queues/"
 								}
 							]
 						}
