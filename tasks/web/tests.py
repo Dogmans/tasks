@@ -259,7 +259,10 @@ class TestApi(TestBase):
 		'''
 		Test that queue can be removed from workspace
 		'''
-		self.assertEqual(1, 2)
+		response = self._client.delete(
+			"/api/workspaces/%s/queues/%s/" % (self._workspace.id, self._queue.id)
+		)
+		self.assertEqual(self._workspace.queue_set.all().count(), 0)
 
 	def test_user_permissions(self):
 		'''
