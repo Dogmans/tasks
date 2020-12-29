@@ -21,7 +21,11 @@
 						{{ listWorkspace.title }}
 					</span>
 				</div>
-				<div class="btn btn-success rounded-0" v-on:click="showCreateWorkspaceModal">Add</div>
+				<div class="btn" v-on:click="showCreateWorkspaceModal"><i class="fa fa-plus-circle text-white" ></i></div>
+				<div v-if="workspace.id">
+					<div class="btn" v-on:click="showUpdateWorkspaceModal"><i class="fa fa-pen text-white" ></i></div>
+					<div class="btn" v-on:click="showDeleteWorkspaceModal"><i class="fa fa-times-circle text-white" ></i></div>
+				</div>
 				<div style="margin-left: auto">
 					<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
 				</div>
@@ -42,12 +46,12 @@
 					<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'bg-primary' : 'bg-secondary', 'p-2 mb-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(listQueue)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ listQueue.title }}</span>
-							<div class="btn" v-on:click="showUpdateQueueModal(listQueue)"><i class="fa fa-pen" ></i></div>
-							<div class="btn" v-on:click="showDeleteQueueModal(listQueue)"><i class="fa fa-times-circle" ></i></div>
 						</div>
 					</div>
 					<div v-if="workspace.id">
-						<div class="btn btn-success col-sm-12 rounded-0" v-on:click="showCreateQueueModal()">Add</div>
+						<div class="btn" v-on:click="showCreateQueueModal()"><i class="fa fa-plus-circle text-white" ></i></div>
+						<div v-if="queue.id" class="btn" v-on:click="showUpdateQueueModal(queue)"><i class="fa fa-pen text-white" ></i></div>
+						<div v-if="queue.id" class="btn" v-on:click="showDeleteQueueModal(queue)"><i class="fa fa-times-circle text-white" ></i></div>
 					</div>
 				</div>
 				<div v-if="queue.id" class="col-sm-2 bg-primary pe-0">
@@ -138,7 +142,7 @@
 						this.task = task;
 					},
 					refreshData(array, url) {
-						self = this;
+						var self = this;
 						axios.get(url)
 						.then(function (response) {
 							self[array] = response.data;
@@ -156,13 +160,13 @@
 					listQueues() {
 						this.refreshData(
 							"queues",
-							"/api/workspaces/" + this.workspace.id + "/queues/"
+							`/api/workspaces/${this.workspace.id}/queues/`
 						);
 					},
 					listTasks() {
 						this.refreshData(
 							"tasks",
-							"/api/queues/" + this.queue.id + "/tasks/"
+							`/api/queues/${this.queue.id}/tasks/`
 						);
 					},
 					showCreateWorkspaceModal() {
@@ -182,6 +186,51 @@
 						}
 						jQuery("#createModal").modal("show");
 					},
+					showUpdateWorkspaceModal() {
+						// Just update the list with the new data
+						// and make sure to update the selected item too
+						var self = this;
+						function refreshSelectedWorkspace(response) {
+							data = response.data;
+							for (var index in self.workspaces) {
+								if (self.workspaces[index].id == data.id) {
+									self.workspaces[index] = data;
+									self.workspace = self.workspaces[index];
+									break;
+								}
+							}
+						}
+						this.form = {
+							title: "Edit " + this.workspace.title,
+							fields: [
+								{name: "title", value: this.workspace.title}
+							],
+							callback: refreshSelectedWorkspace,
+							buttons: [
+								{
+									title: "Update",
+									method: "put",
+									url: `/api/workspaces/${this.workspace.id}/`
+								}
+							]
+						}
+						jQuery("#createModal").modal("show");
+					},
+					showDeleteWorkspaceModal() {
+						this.form = {
+							title: "Delete " + this.workspace.title,
+							fields: [],
+							callback: this.listWorkspaces,
+							buttons: [
+								{
+									title: "Delete",
+									method: "delete",
+									url: `/api/workspaces/${queue.id}/`
+								}
+							]
+						}
+						jQuery("#createModal").modal("show");
+					},
 					showCreateQueueModal() {
 						this.form = {
 							title: "Add Queue",
@@ -193,7 +242,7 @@
 								{
 									title: "Add",
 									method: "post",
-									url: "/api/workspaces/" + this.workspace.id + "/queues/"
+									url: `/api/workspaces/${this.workspace.id}/queues/`
 								}
 							]
 						}
@@ -210,7 +259,7 @@
 								{
 									title: "Update",
 									method: "put",
-									url: "/api/queues/" + queue.id + "/"
+									url: `/api/queues/${queue.id}/`
 								}
 							]
 						}
@@ -218,14 +267,14 @@
 					},
 					showDeleteQueueModal(queue) {
 						this.form = {
-							title: "Delete Queue",
+							title: "Delete " + queue.title,
 							fields: [],
 							callback: this.listQueues,
 							buttons: [
 								{
 									title: "Delete",
 									method: "delete",
-									url: "/api/queues/" + queue.id + "/"
+									url: `/api/queues/${queue.id}/`
 								}
 							]
 						}
@@ -235,7 +284,7 @@
 						self = this;
 						axios({
 							method: "post",
-							url: "/api/queues/" + this.queue.id + "/tasks/",
+							url: `/api/queues/${this.queue.id}/tasks/`,
 							data: {title: "New task"}
 						})
 						.then(function (response) {
@@ -249,7 +298,7 @@
 					saveTask(task) {
 						axios({
 							method: "put",
-							url:  "/api/tasks/" + task.id + "/",
+							url:  `/api/tasks/${task.id}/`,
 							data: task
 						})
 						.then(function (response) {
@@ -307,7 +356,7 @@
 							data: payload
 						})
 						.then(function (response) {
-							self.form.callback();
+							self.form.callback(response);
 						})
 						.catch(function (error) {
 							console.log(error);
@@ -322,20 +371,20 @@
 					}
 				},
 				watch: {
-					workspace: function (val) {
-						if (val.id) {
+					workspace: function (n, o) {
+						if (n.id && (n.id != o.id)) {
 							this.listQueues();
 						}
 					},
-					queue: function (val) {
-						if (val.id) {
+					queue: function (n, o) {
+						if (n.id && (n.id != o.id)) {
 							this.listTasks();
 						}
 					},
 					task: {
-						handler(oldTask, newTask) {
+						handler(newTask, oldTask) {
 							// Check that the change is not due to selecting
-							// a different task
+							// a different task but instead due to some typing
 							if (newTask.id && (oldTask.id == newTask.id)) {
 								this.taskSaveDict[newTask.id] = newTask;
 							}
