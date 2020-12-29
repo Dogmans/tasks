@@ -13,13 +13,15 @@
 </head>
 <body class="background-color: bg-dark">
 	<span id="app">
-		<nav class="nav bg-secondary text-white p-2 mb-2">
+		<nav class="nav bg-secondary text-white mb-2">
 			{% if user.is_authenticated %}
 				{% verbatim %}
-				<div v-for="listWorkspace in workspaces">
-					<div v-bind:class="[listWorkspace.id == workspace.id ? 'bg-primary' : 'bg-secondary', 'text-white btn rounded-2']" v-on:click="selectWorkspace(listWorkspace)">{{ listWorkspace.title }}</div>
+				<div v-for="listWorkspace in workspaces" v-bind:class="[listWorkspace.id == workspace.id ? 'bg-dark' : 'bg-secondary', 'btn text-white px-2 rounded-0']" v-on:click="selectWorkspace(listWorkspace)">
+					<span class="align-middle">
+						{{ listWorkspace.title }}
+					</span>
 				</div>
-				<div class="btn btn-success" v-on:click="showCreateWorkspaceModal">Add</div>
+				<div class="btn btn-success rounded-0" v-on:click="showCreateWorkspaceModal">Add</div>
 				<div style="margin-left: auto">
 					<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
 				</div>
