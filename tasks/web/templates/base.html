@@ -13,7 +13,7 @@
 </head>
 <body class="background-color: bg-dark">
 	<span id="app">
-		<nav class="nav bg-secondary text-white mb-2">
+		<nav class="nav bg-secondary text-white mb-3">
 			{% if user.is_authenticated %}
 				{% verbatim %}
 				<div v-for="listWorkspace in workspaces" v-bind:class="[listWorkspace.id == workspace.id ? 'bg-dark' : 'bg-secondary', 'btn text-white px-2 rounded-0']" v-on:click="selectWorkspace(listWorkspace)">
@@ -38,34 +38,34 @@
 		{% verbatim %}
 		<div class="container-fluid">
 			<div class="row fullheight">
-				<div class="col-sm-2 bg-dark">
-					<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'bg-primary' : 'bg-secondary', 'p-2 mt-2 rounded-2']">
+				<div class="col-sm-2 bg-dark ps-3 pe-0">
+					<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'bg-primary' : 'bg-secondary', 'p-2 mb-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(listQueue)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ listQueue.title }}</span>
 							<div class="btn" v-on:click="showUpdateQueueModal(listQueue)"><i class="fa fa-pen" ></i></div>
 							<div class="btn" v-on:click="showDeleteQueueModal(listQueue)"><i class="fa fa-times-circle" ></i></div>
 						</div>
 					</div>
-					<div v-if="workspace.id" class="mt-2">
-						<div class="btn btn-success col-sm-12" v-on:click="showCreateQueueModal()">Add</div>
+					<div v-if="workspace.id">
+						<div class="btn btn-success col-sm-12 rounded-0" v-on:click="showCreateQueueModal()">Add</div>
 					</div>
 				</div>
-				<div class="col-sm-2 bg-dark">
-					<div v-for="listTask in tasks" v-bind:class="[listTask.id == task.id ? 'bg-primary' : 'bg-secondary', 'p-2 mt-2 rounded-2']">
+				<div v-if="queue.id" class="col-sm-2 bg-primary pe-0">
+					<div v-for="listTask in tasks" v-bind:class="[listTask.id == task.id ? 'bg-info' : 'bg-secondary', 'p-2 mt-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(listTask)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ listTask.title }}</span>
 						</div>
 					</div>
 					<div v-if="queue.id" class="mt-2">
-						<div class="btn btn-success col-sm-12" v-on:click="addTask">Add</div>
+						<div class="btn btn-success col-sm-12 rounded-0" v-on:click="addTask">Add</div>
 					</div>
 				</div>
-				<div class="col-sm-8 bg-dark">
-					<div class="d-flex my-2 text-white bg-dark">
+				<div v-if="task.id" class="col-sm-8 bg-info">
+					<div class="d-flex my-2 text-white">
 						<input class="form-control" style="margin-right: auto" v-model="task.title">
 						<div class="btn text-white" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
 					</div>
-					<div class="d-flex h-75 text-white bg-dark">
+					<div class="d-flex h-75 text-white">
 						<textarea class="form-control w-100 h-100" v-if="task" v-model="task.details">
 						</textarea>
 					</div>
@@ -127,9 +127,12 @@
 				methods: {
 					selectWorkspace(workspace) {
 						this.workspace = workspace;
+						this.queue = {};
+						this.task = {};
 					},
 					selectQueue(queue) {
 						this.queue = queue;
+						this.task = {};
 					},
 					selectTask(task) {
 						this.task = task;
@@ -320,16 +323,20 @@
 				},
 				watch: {
 					workspace: function (val) {
-						this.listQueues();
+						if (val.id) {
+							this.listQueues();
+						}
 					},
 					queue: function (val) {
-						this.listTasks();
+						if (val.id) {
+							this.listTasks();
+						}
 					},
 					task: {
 						handler(oldTask, newTask) {
 							// Check that the change is not due to selecting
 							// a different task
-							if (oldTask.id == newTask.id) {
+							if (newTask.id && (oldTask.id == newTask.id)) {
 								this.taskSaveDict[newTask.id] = newTask;
 							}
 						},
