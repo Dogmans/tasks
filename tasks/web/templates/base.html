@@ -151,6 +151,15 @@
 							console.log(error);
 						});
 					},
+					getUpdateEntity(name) {
+						var self = this;
+						function updateEntity(response) {
+							for (key in response.data) {
+								self[name][key] = response.data[key];
+							}
+						}
+						return updateEntity;
+					},
 					listWorkspaces() {
 						this.refreshData(
 							"workspaces",
@@ -187,25 +196,12 @@
 						jQuery("#createModal").modal("show");
 					},
 					showUpdateWorkspaceModal() {
-						// Just update the list with the new data
-						// and make sure to update the selected item too
-						var self = this;
-						function refreshSelectedWorkspace(response) {
-							data = response.data;
-							for (var index in self.workspaces) {
-								if (self.workspaces[index].id == data.id) {
-									self.workspaces[index] = data;
-									self.workspace = self.workspaces[index];
-									break;
-								}
-							}
-						}
 						this.form = {
 							title: "Edit " + this.workspace.title,
 							fields: [
 								{name: "title", value: this.workspace.title}
 							],
-							callback: refreshSelectedWorkspace,
+							callback: this.getUpdateEntity("workspace"),
 							buttons: [
 								{
 									title: "Update",
@@ -254,7 +250,7 @@
 							fields: [
 								{name: "title", value: queue.title}
 							],
-							callback: this.listQueues,
+							callback: this.getUpdateEntity("queue"),
 							buttons: [
 								{
 									title: "Update",
