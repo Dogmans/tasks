@@ -11,13 +11,13 @@
 	<title>{% block title %}Tasks{% endblock %}</title>
 	{% block head %}{% endblock %}
 </head>
-<body class="background-color: bg-dark">
+<body class="workspace selected">
 	<span id="app">
-		<nav class="nav bg-secondary text-white mb-3">
+		<nav class="nav workspace text-white mb-3">
 			{% if user.is_authenticated %}
 				{% verbatim %}
-				<div v-for="listWorkspace in workspaces" v-bind:class="[listWorkspace.id == workspace.id ? 'bg-dark' : 'bg-secondary', 'btn text-white px-2 rounded-0']" v-on:click="selectWorkspace(listWorkspace)">
-					<span class="align-middle">
+				<div v-for="listWorkspace in workspaces" v-bind:class="[listWorkspace.id == workspace.id ? 'selected' : '', 'workspace btn text-white px-2 rounded-0']" v-on:click="selectWorkspace(listWorkspace)">
+					<span class="h5">
 						{{ listWorkspace.title }}
 					</span>
 				</div>
@@ -42,8 +42,8 @@
 		{% verbatim %}
 		<div class="container-fluid">
 			<div class="row fullheight">
-				<div class="col-sm-2 bg-dark ps-3 pe-0">
-					<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'bg-primary' : 'bg-secondary', 'p-2 mb-2']">
+				<div class="col-sm-2 ps-3 pe-0 workspace selected">
+					<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'selected' : '', 'queue p-2 mb-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectQueue(listQueue)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ listQueue.title }}</span>
 						</div>
@@ -54,17 +54,17 @@
 						<div v-if="queue.id" class="btn" v-on:click="showDeleteQueueModal(queue)"><i class="fa fa-times-circle text-white" ></i></div>
 					</div>
 				</div>
-				<div v-if="queue.id" class="col-sm-2 bg-primary pe-0">
-					<div v-for="listTask in tasks" v-bind:class="[listTask.id == task.id ? 'bg-info' : 'bg-secondary', 'p-2 mt-2']">
+				<div v-if="queue.id" class="col-sm-2 pe-0 queue selected">
+					<div v-for="listTask in tasks" v-bind:class="[listTask.id == task.id ? 'selected' : '', 'task p-2 mt-2']">
 						<div class="col-sm-12 d-flex cursor-pointer text-white" v-on:click="selectTask(listTask)">
 							<span style="margin-right: auto" class="cursor-pointer">{{ listTask.title }}</span>
 						</div>
 					</div>
 					<div v-if="queue.id" class="mt-2">
-						<div class="btn btn-success col-sm-12 rounded-0" v-on:click="addTask">Add</div>
+						<div class="btn" v-on:click="addTask"><i class="fa fa-plus-circle text-white" ></i></div>
 					</div>
 				</div>
-				<div v-if="task.id" class="col-sm-8 bg-info">
+				<div v-if="task.id" class="col-sm-8 task selected">
 					<div class="d-flex my-2 text-white">
 						<input class="form-control" style="margin-right: auto" v-model="task.title">
 						<div class="btn text-white" v-on:click="showRemoveTaskModal(task)"><i class="fa fa-times-circle" ></i></div>
@@ -151,14 +151,25 @@
 							console.log(error);
 						});
 					},
-					getUpdateEntity(name) {
+					getHandleUpdate(name) {
 						var self = this;
-						function updateEntity(response) {
+						function handleUpdate(response) {
 							for (key in response.data) {
 								self[name][key] = response.data[key];
 							}
 						}
-						return updateEntity;
+						return handleUpdate;
+					},
+					getHandleDelete(name) {
+						// Remove the deleted item from the array
+						// and set selected item to nothing
+						var self = this;
+						function handleDelete(response) {
+							var arrayName = name + "s";
+							self[arrayName] = self[arrayName].filter(x => x.id != self[name].id);
+							self[name] = {};
+						}
+						return handleDelete;
 					},
 					listWorkspaces() {
 						this.refreshData(
@@ -201,7 +212,7 @@
 							fields: [
 								{name: "title", value: this.workspace.title}
 							],
-							callback: this.getUpdateEntity("workspace"),
+							callback: this.getHandleUpdate("workspace"),
 							buttons: [
 								{
 									title: "Update",
@@ -216,12 +227,12 @@
 						this.form = {
 							title: "Delete " + this.workspace.title,
 							fields: [],
-							callback: this.listWorkspaces,
+							callback: this.getHandleDelete("workspace"),
 							buttons: [
 								{
 									title: "Delete",
 									method: "delete",
-									url: `/api/workspaces/${queue.id}/`
+									url: `/api/workspaces/${this.workspace.id}/`
 								}
 							]
 						}
@@ -250,7 +261,7 @@
 							fields: [
 								{name: "title", value: queue.title}
 							],
-							callback: this.getUpdateEntity("queue"),
+							callback: this.getHandleUpdate("queue"),
 							buttons: [
 								{
 									title: "Update",
