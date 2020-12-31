@@ -120,7 +120,7 @@ class TestModels(TestBase):
 		tasks = self._queue.tasks()
 		self.assertEqual(len(tasks), 2, len(tasks))
 
-	def test_cleanup(self):
+	def test_task_cleanup(self):
 		tasks = self._queue.tasks()
 
 		while (len(tasks)):
@@ -129,6 +129,18 @@ class TestModels(TestBase):
 
 		slot_count = Slot.objects.all().count()
 		self.assertEqual(slot_count, 0, slot_count)
+
+	def test_workspace_cleanup(self):
+		self._workspace.delete()
+
+		slot_count = Slot.objects.all().count()
+		self.assertEqual(slot_count, 0, slot_count)
+
+		queue_count = Queue.objects.all().count()
+		self.assertEqual(queue_count, 0, queue_count)
+
+		task_count = Task.objects.all().count()
+		self.assertEqual(task_count, 0, task_count)
 
 	# TODO - test queue deletion - it will delete slots but not orphaned tasks!
 	# TODO - when queue is deleted then it should actually search for these too

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.signals import pre_delete
 from web.sort_keys import key_next, key_between
 
 
@@ -66,6 +67,13 @@ class Queue(models.Model):
 		return [slot.task for slot in self.slot_set.order_by("sort_key").select_related("task").all()]
 
 
+def pre_delete_queue(sender, instance, *args, **kwargs):
+	for task in instance.tasks():
+		task.delete()
+
+pre_delete.connect(pre_delete_queue, sender=Queue)
+
+
 class Task(models.Model):
 	owner = models.ForeignKey(
 		"auth.User",
@@ -88,6 +96,8 @@ class Slot(models.Model):
 	queue = models.ForeignKey(Queue, on_delete=models.CASCADE)
 	task = models.ForeignKey(Task, on_delete=models.CASCADE)
 	sort_key = models.CharField(max_length=32)
+
+	
 
 	def __str__(self):
 		return "{}-{}".format(self.queue.title, self.task.title)
