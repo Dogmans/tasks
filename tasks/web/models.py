@@ -68,8 +68,10 @@ class Queue(models.Model):
 
 
 def pre_delete_queue(sender, instance, *args, **kwargs):
+	# Remove all tasks associated with this queue only
 	for task in instance.tasks():
-		task.delete()
+		if task.slot_set.count() < 2:
+			task.delete()
 
 pre_delete.connect(pre_delete_queue, sender=Queue)
 
