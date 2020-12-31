@@ -5,3 +5,27 @@
 .cursor-pointer{
 	cursor: pointer;
 }
+
+.workspace {
+	background-color: grey;
+}
+
+.workspace.selected {
+	background-color: black;
+}
+
+.queue {
+	background-color: lightblue;
+}
+
+.queue.selected {
+	background-color: blue;
+}
+
+.task {
+	background-color: lightgreen;
+}
+
+.task.selected {
+	background-color: green;
+}
