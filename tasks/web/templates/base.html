@@ -13,7 +13,7 @@
 </head>
 <body class="workspace selected">
 	<span id="app">
-		<nav class="nav workspace text-white mb-3">
+		<nav class="nav workspace text-white mb-4">
 			{% if user.is_authenticated %}
 				{% verbatim %}
 				<div v-for="listWorkspace in workspaces" v-bind:class="[listWorkspace.id == workspace.id ? 'selected' : '', 'workspace btn text-white px-2 rounded-0']" v-on:click="selectWorkspace(listWorkspace)">
@@ -42,8 +42,8 @@
 		{% verbatim %}
 		<div class="container-fluid">
 			<div class="row fullheight">
-				<div class="col-sm-12 ps-3 pe-0 workspace selected pe-4">
-					<div class="row">
+				<div class="col-sm-12 ps-3 workspace selected pe-4">
+					<div class="row pe-2">
 						<div class="col-2 pe-0">
 							<div v-for="listQueue in queues" v-bind:class="[listQueue.id == queue.id ? 'selected' : '', 'queue p-2 mb-2']">
 								<div class="d-flex cursor-pointer text-white" v-on:click="selectQueue(listQueue)">
