@@ -15,17 +15,21 @@
 }
 
 .queue {
-	background-color: lightblue;
+	background-color: #525252;
+	font-weight: normal;
 }
 
 .queue.selected {
-	background-color: blue;
+	background-color: #9a9a9a;
+	font-weight: bold;
 }
 
 .task {
-	background-color: lightgreen;
+	background-color: #c3c3c3;
+	font-weight: normal;
 }
 
 .task.selected {
-	background-color: green;
+	background-color: #eaeaea;
+	font-weight: bold;
 }
