@@ -30,12 +30,15 @@
 					<i v-if="saving" class="text-white btn fa fa-spin fa-save" ></i>
 				</div>
 				{% endverbatim %}
-				<div class="text-dark">
-					<p class="m-2 mx-4">{{ user.username }}</p>
+				<div class="navbar-nav pe-2">
+					<span class="nav-link text-dark">{{ user.username }}</span>
+				</div>
+				<div class="navbar-nav px-4">
+					<a class="nav-link text-dark" href="/api-auth/logout">Logout</a>
 				</div>
 			{% else %}
-				<div class="text-dark" style="margin-left: auto">
-					<a class="m-2" href="/api-auth/login">Login</a>
+				<div class="navbar-nav px-4" style="margin-left: auto">
+					<a class="nav-link text-dark" href="/api-auth/login?next=/">Login</a>
 				</div>
 			{% endif %}
 		</nav>
