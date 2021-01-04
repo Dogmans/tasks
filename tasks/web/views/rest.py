@@ -8,7 +8,7 @@ from rest_framework import permissions
 from rest_framework import status
 from rest_framework import viewsets
 
-from web.models import Queue, Task, Workspace
+from web.models import Task
 from web.permissions import IsOwnerOrReadOnly
 from web.serializers import QueueSerializer, TaskSerializer, UserSerializer, WorkspaceSerializer
 
@@ -38,7 +38,7 @@ class QueueViewSet(viewsets.ModelViewSet):
 	]
 	
 	def get_queryset(self):
-		return Queue.objects.filter(owner=self.request.user)
+		return self.request.user.queues
 
 	def perform_create(self, serializer):
 		serializer.save(owner=self.request.user)
@@ -48,7 +48,7 @@ class QueueTaskView():
 	serializer_class = TaskSerializer
 
 	def get_queue(self):
-		return Queue.objects.get(owner=self.request.user, id=self.kwargs.get("queue_id"))
+		return self.request.user.queues.get(id=self.kwargs.get("queue_id"))
 
 	# TODO - order by slot sortorder
 	def get_queryset(self):
@@ -63,7 +63,7 @@ class QueueTaskListView(QueueTaskView, generics.ListCreateAPIView):
 		# Pass existing object into serializer if we are passing exsting id
 		task_id = request.data.get("task_id")
 		if task_id:
-			task = Task.objects.get(owner=self.request.user, pk=task_id)
+			task = request.user.tasks.get(pk=task_id)
 			serializer = self.get_serializer(task, many=False)
 		else:
 			serializer = self.get_serializer(data=request.data)
@@ -101,7 +101,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 	]
 
 	def get_queryset(self):
-		return Task.objects.filter(owner=self.request.user)
+		return self.request.user.tasks.all()
 
 	def perform_create(self, serializer):
 		serializer.save(owner=self.request.user)
@@ -111,10 +111,7 @@ class WorkspaceQueueView():
 	serializer_class = QueueSerializer
 
 	def get_workspace(self):
-		return Workspace.objects.get(
-			owner=self.request.user,
-			id=self.kwargs.get("workspace_id")
-		)
+		return self.request.user.workspaces.get(id=self.kwargs.get("workspace_id"))
 
 	def get_queryset(self):
 		return self.get_workspace().queue_set.all().order_by("title")
@@ -128,7 +125,7 @@ class WorkspaceQueueListView(WorkspaceQueueView, generics.ListCreateAPIView):
 		workspace = self.get_workspace()
 
 		if queue_id:
-			queue = Queue.objects.get(owner=self.request.user, pk=queue_id)
+			queue = request.user.queues.get(pk=queue_id)
 			serializer = self.get_serializer(queue, many=False)
 		else:
 			serializer = self.get_serializer(data=request.data)
@@ -155,7 +152,7 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
 	]
 
 	def get_queryset(self):
-		return Workspace.objects.filter(owner=self.request.user).order_by("title")
+		return self.request.user.workspaces.all().order_by("title")
 
 	def perform_create(self, serializer):
 		serializer.save(owner=self.request.user)
